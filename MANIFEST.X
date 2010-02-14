@@ -1,4 +1,4 @@
-Changes
+Changes		# Changes
 Collate.pm	perl module for XSUB
 Collate.pmN	# perl module for NoXSUB (pure perl)
 Collate.xs	extension for XSUB
@@ -10,7 +10,7 @@ Makefile.PL
 MANIFEST	MANIFEST for XSUB
 MANIFEST.N	# MANIFEST for NoXSUB (pure perl)
 META.yml	# meta file
-README
+README		# README
 t/altern.t
 t/cjkrange.t
 t/contract.t
