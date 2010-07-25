@@ -1,19 +1,21 @@
 Changes		# Changes
-Collate.pm	perl module for XSUB
-Collate.pmN	# perl module for NoXSUB (pure perl)
-Collate.xs	extension for XSUB
+Collate.pm	perl module for NoXSUB (pure perl)
+Collate.pmX	# perl module for XSUB
+Collate.xsX	# extension for XSUB
 Collate/allkeys.txt
 Collate/keys.txt
 disableXS	# perl script to disable XSUB
 enableXS	# perl script to enable XSUB
 Makefile.PL
-MANIFEST	MANIFEST for XSUB
-MANIFEST.N	# MANIFEST for NoXSUB (pure perl)
+MANIFEST	MANIFEST for NoXSUB (pure perl)
+MANIFEST.X	# MANIFEST for XSUB
 META.yml	# meta file
+mkheader	# perl script to make C header files for XSUB
 README		# README
 t/altern.t
 t/cjkrange.t
 t/contract.t
+t/default.t	test using DUCET
 t/hangtype.t
 t/hangul.t
 t/ignor.t

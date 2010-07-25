@@ -2,6 +2,9 @@
 #include "perl.h"
 #include "XSUB.h"
 
+/* This file is prepared by mkheader */
+#include "ucatbl.h"
+
 /* Perl 5.6.1 ? */
 #ifndef utf8n_to_uvuni
 #define utf8n_to_uvuni  utf8_to_uv
@@ -9,6 +12,10 @@
 
 /* if utf8n_to_uvuni() sets retlen to 0 (?) */
 #define ErrRetlenIsZero "panic (Unicode::Collate): zero-length character"
+
+/* At present, char > 0x10ffff are unaffected without complaint, right? */
+#define VALID_UTF_MAX    (0x10ffff)
+#define OVER_UTF_MAX(uv) (VALID_UTF_MAX < (uv))
 
 static const UV max_div_16 = UV_MAX / 16;
 
@@ -30,25 +37,101 @@ static const UV max_div_16 = UV_MAX / 16;
 #define Hangul_LIni	(0x1100)
 #define Hangul_LFin	(0x1159)
 #define Hangul_LFill	(0x115F)
+#define Hangul_LEnd	(0x115F) /* Unicode 5.2.0 */
 #define Hangul_VBase	(0x1161)
 #define Hangul_VIni	(0x1160)
 #define Hangul_VFin	(0x11A2)
+#define Hangul_VEnd	(0x11A7) /* Unicode 5.2.0 */
 #define Hangul_TBase	(0x11A7)
 #define Hangul_TIni	(0x11A8)
 #define Hangul_TFin	(0x11F9)
+#define Hangul_TEnd	(0x11FF) /* Unicode 5.2.0 */
+#define HangulL2Ini	(0xA960) /* Unicode 5.2.0 */
+#define HangulL2Fin	(0xA97C) /* Unicode 5.2.0 */
+#define HangulV2Ini	(0xD7B0) /* Unicode 5.2.0 */
+#define HangulV2Fin	(0xD7C6) /* Unicode 5.2.0 */
+#define HangulT2Ini	(0xD7CB) /* Unicode 5.2.0 */
+#define HangulT2Fin	(0xD7FB) /* Unicode 5.2.0 */
 
 #define CJK_UidIni	(0x4E00)
 #define CJK_UidFin	(0x9FA5)
 #define CJK_UidF41	(0x9FBB)
 #define CJK_UidF51	(0x9FC3)
+#define CJK_UidF52	(0x9FCB)
 #define CJK_ExtAIni	(0x3400)
 #define CJK_ExtAFin	(0x4DB5)
 #define CJK_ExtBIni	(0x20000)
 #define CJK_ExtBFin	(0x2A6D6)
+#define CJK_ExtCIni	(0x2A700) /* Unicode 5.2.0 */
+#define CJK_ExtCFin	(0x2B734) /* Unicode 5.2.0 */
 
 MODULE = Unicode::Collate	PACKAGE = Unicode::Collate
 
 PROTOTYPES: DISABLE
+
+void
+_fetch_rests ()
+  PREINIT:
+    char ** rests;
+  PPCODE:
+    for (rests = UCA_rests; *rests; ++rests) {
+	XPUSHs(sv_2mortal(newSVpv((char *) *rests, 0)));
+    }
+
+
+void
+_fetch_simple (uv)
+    UV uv
+  PREINIT:
+    U8 ***plane, **row;
+    char* result = NULL;
+  PPCODE:
+    if (!OVER_UTF_MAX(uv)){
+	plane = (U8***)UCA_simple[uv >> 16];
+	if (plane) {
+	    row = plane[(uv >> 8) & 0xff];
+	    result = row ? row[uv & 0xff] : NULL;
+	}
+    }
+    if (result) {
+	int i;
+	int num = (int)*result;
+	++result;
+	for (i = 0; i < num; ++i) {
+	    XPUSHs(sv_2mortal(newSVpvn((char *) result, VCE_Length)));
+	    result += VCE_Length;
+	}
+    } else {
+	XPUSHs(sv_2mortal(newSViv(0)));
+    }
+
+SV*
+_ignorable_simple (uv)
+    UV uv
+  ALIAS:
+    _exists_simple = 1
+  PREINIT:
+    U8 ***plane, **row;
+    int num = -1;
+    char* result = NULL;
+  CODE:
+    if (!OVER_UTF_MAX(uv)){
+	plane = (U8***)UCA_simple[uv >> 16];
+	if (plane) {
+	    row = plane[(uv >> 8) & 0xff];
+	    result = row ? row[uv & 0xff] : NULL;
+	}
+	if (result)
+	    num = (int)*result; /* assuming 0 <= num < 128 */
+    }
+
+    if (ix)
+	RETVAL = boolSV(num >0);
+    else
+	RETVAL = boolSV(num==0);
+  OUTPUT:
+    RETVAL
+
 
 void
 _getHexArray (src)
@@ -121,31 +204,45 @@ _decompHangul (code)
 
 
 SV*
-getHST (code)
-    UV code
+getHST (code, uca_vers = 0)
+    UV code;
+    IV uca_vers;
   PREINIT:
     char * hangtype;
     STRLEN typelen;
   CODE:
-    if (Hangul_LIni <= code && code <= Hangul_LFin || code == Hangul_LFill) {
-	hangtype = "L"; typelen = 1;
-    }
-    else if (Hangul_VIni <= code && code <= Hangul_VFin) {
-	hangtype = "V"; typelen = 1;
-    }
-    else if (Hangul_TIni <= code && code <= Hangul_TFin) {
-	hangtype = "T"; typelen = 1;
-    }
-    else if (Hangul_SIni <= code && code <= Hangul_SFin) {
+    if (Hangul_SIni <= code && code <= Hangul_SFin) {
 	if ((code - Hangul_SBase) % Hangul_TCount) {
 	    hangtype = "LVT"; typelen = 3;
 	} else {
 	    hangtype = "LV"; typelen = 2;
 	}
+    } else if (uca_vers < 20) {
+	if (Hangul_LIni <= code && code <= Hangul_LFin ||
+				   code == Hangul_LFill) {
+	    hangtype = "L"; typelen = 1;
+	} else if (Hangul_VIni <= code && code <= Hangul_VFin) {
+	    hangtype = "V"; typelen = 1;
+	} else if (Hangul_TIni <= code && code <= Hangul_TFin) {
+	    hangtype = "T"; typelen = 1;
+	} else {
+	    hangtype = ""; typelen = 0;
+	}
+    } else {
+	if        (Hangul_LIni <= code && code <= Hangul_LEnd ||
+		   HangulL2Ini <= code && code <= HangulL2Fin) {
+	    hangtype = "L"; typelen = 1;
+	} else if (Hangul_VIni <= code && code <= Hangul_VEnd ||
+		   HangulV2Ini <= code && code <= HangulV2Fin) {
+	    hangtype = "V"; typelen = 1;
+	} else if (Hangul_TIni <= code && code <= Hangul_TEnd ||
+		   HangulT2Ini <= code && code <= HangulT2Fin) {
+	    hangtype = "T"; typelen = 1;
+	} else {
+	    hangtype = ""; typelen = 0;
+	}
     }
-    else {
-	hangtype = ""; typelen = 0;
-    }
+
     RETVAL = newSVpvn(hangtype, typelen);
 OUTPUT:
     RETVAL
@@ -157,17 +254,21 @@ _derivCE_9 (code)
   ALIAS:
     _derivCE_14 = 1
     _derivCE_18 = 2
+    _derivCE_20 = 3
   PREINIT:
     UV base, aaaa, bbbb;
     U8 a[VCE_Length + 1] = "\x00\xFF\xFF\x00\x20\x00\x02\xFF\xFF";
     U8 b[VCE_Length + 1] = "\x00\xFF\xFF\x00\x00\x00\x00\xFF\xFF";
   PPCODE:
-    base = (CJK_UidIni <= code && (ix == 2 ? (code <= CJK_UidF51) :
+    base = (CJK_UidIni <= code && (ix >= 3 ? (code <= CJK_UidF52) :
+				   ix == 2 ? (code <= CJK_UidF51) :
 				   ix == 1 ? (code <= CJK_UidF41) :
 					     (code <= CJK_UidFin)))
 	    ? 0xFB40 : /* CJK */
 	   (CJK_ExtAIni <= code && code <= CJK_ExtAFin ||
-	    CJK_ExtBIni <= code && code <= CJK_ExtBFin)
+	    CJK_ExtBIni <= code && code <= CJK_ExtBFin ||
+	    ix >= 3 &&
+	    CJK_ExtCIni <= code && code <= CJK_ExtCFin)
 	    ? 0xFB80   /* CJK ext. */
 	    : 0xFBC0;  /* others */
     aaaa =  base + (code >> 15);
@@ -220,6 +321,7 @@ _isUIdeo (code, uca_vers)
   CODE:
     RETVAL = boolSV(
 	(CJK_UidIni <= code && (
+	    uca_vers >= 20 ? (code <= CJK_UidF52) :
 	    uca_vers >= 18 ? (code <= CJK_UidF51) :
 	    uca_vers >= 14 ? (code <= CJK_UidF41) :
 			     (code <= CJK_UidFin)
@@ -228,6 +330,9 @@ _isUIdeo (code, uca_vers)
 	(CJK_ExtAIni <= code && code <= CJK_ExtAFin)
 		||
 	(CJK_ExtBIni <= code && code <= CJK_ExtBFin)
+		||
+	(uca_vers >= 20 &&
+	 CJK_ExtCIni <= code && code <= CJK_ExtCFin)
     );
 OUTPUT:
     RETVAL
