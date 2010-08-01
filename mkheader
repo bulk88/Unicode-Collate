@@ -6,10 +6,10 @@
 # Usage:
 #    <do 'mkheader'> in perl, or <perl mkheader> in command line
 #
-# Input files:
+# Input file:
 #    Collate/allkeys.txt
 #
-# Output files:
+# Output file:
 #    ucatbl.h
 #
 use 5.006;
@@ -34,7 +34,7 @@ our $PACKAGE = 'Unicode::Collate, mkheader';
 our $prefix  = "UCA_";
 
 our %SimpleEntries;	# $codepoint => $keys
-our @Rests;
+our @Rest;
 
 {
     my($f, $fh);
@@ -48,7 +48,7 @@ our @Rests;
     while (my $line = <$fh>) {
 	next if $line =~ /^\s*#/;
 	if ($line =~ /^\s*\@/) {
-	    push @Rests, $line;
+	    push @Rest, $line;
 	    next;
 	}
 
@@ -66,7 +66,7 @@ our @Rests;
 	next if !@uv;
 
 	if (@uv != 1) {
-	    push @Rests, $line;
+	    push @Rest, $line;
 	    next;
 	}
 
@@ -103,16 +103,16 @@ sub stringify {
 my $init = '';
 {
     my $type = "char*";
-    my $head = $prefix."rests";
+    my $head = $prefix."rest";
 
     $init .= "static $type $head [] = {\n";
-    for my $line (@Rests) {
+    for my $line (@Rest) {
 	$line =~ s/\s*\z//;
 	next if $line eq '';
 	$init .= "/*$line*/\n" if $line =~ /^[A-Za-z0-9_.:;@\ \[\]]+\z/;
 	$init .= "($type)".stringify($line).",\n";
     }
-    $init .= "NULL\n";
+    $init .= "NULL\n"; # sentinel
     $init .= "};\n\n";
 }
 

@@ -14,7 +14,7 @@ use File::Spec;
 
 no warnings 'utf8';
 
-our $VERSION = '0.54';
+our $VERSION = '0.55';
 our $PACKAGE = __PACKAGE__;
 
 require DynaLoader;
@@ -243,7 +243,7 @@ sub new
 	!defined $self->{undefName} && !defined $self->{ignoreName} &&
 	!defined $self->{undefChar} && !defined $self->{ignoreChar}) {
 	$self->{__useXS} = \&_fetch_simple;
-    }
+    } # XS only
 
     # If undef is passed explicitly, no file is read.
     $self->{table} = $KeyFile if ! exists $self->{table};
@@ -303,8 +303,8 @@ sub read_table {
     my $self = shift;
 
     if ($self->{__useXS}) {
-	my @rests = _fetch_rests();
-	for my $line (@rests) {
+	my @rest = _fetch_rest(); # complex matter need to parse
+	for my $line (@rest) {
 	    next if $line =~ /^\s*#/;
 
 	    if ($line =~ s/^\s*\@//) {

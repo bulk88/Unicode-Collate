@@ -70,12 +70,12 @@ MODULE = Unicode::Collate	PACKAGE = Unicode::Collate
 PROTOTYPES: DISABLE
 
 void
-_fetch_rests ()
+_fetch_rest ()
   PREINIT:
-    char ** rests;
+    char ** rest;
   PPCODE:
-    for (rests = UCA_rests; *rests; ++rests) {
-	XPUSHs(sv_2mortal(newSVpv((char *) *rests, 0)));
+    for (rest = UCA_rest; *rest; ++rest) {
+	XPUSHs(sv_2mortal(newSVpv((char *) *rest, 0)));
     }
 
 

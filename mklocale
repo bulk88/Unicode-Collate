@@ -1,0 +1,181 @@
+#!perl
+#
+# This auxiliary script makes locale .pl files
+# used by Unicode::Collate::Locale.
+#
+# Usage:
+#    <do 'mklocale'> in perl, or <perl mklocale> in command line
+#
+# Input files:
+#    data/*.txt
+#    Collate/allkeys.txt
+#
+# Output files:
+#    Locale/*.pl
+#   (need to be moved to Collate/Locale/*.pl to install them)
+#
+# Examples of the Rules
+# 00F1;n+1 ===> primary weight of 00F1 is greater than that of n by 1.
+#    +1  primary weight lesser by 1.
+#    -1  primary weight greater by 1.
+#    ++1,--1 (secondary weight), +++1,---1 (tertiary weight)
+#
+# 01FD;<00E6><0301> ===> U+01FD eq U+00E6,U+0301
+#   <XXXX> cannot be followed by +1 etc.
+#
+use 5.006;
+use strict;
+use warnings;
+use Carp;
+use File::Spec;
+
+BEGIN {
+    unless ("A" eq pack('U', 0x41)) {
+	die "Unicode::Collate cannot stringify a Unicode code point\n";
+    }
+}
+
+sub _getHexArray { map hex, $_[0] =~ /([0-9a-fA-F]+)/g }
+sub trim { $_[0] =~ s/^\ +//; $_[0] =~ s/\ +\z// }
+
+our $PACKAGE = 'Unicode::Collate, locale';
+our $ENT_FMT = "%-9s ; %s # %s\n";
+
+my (%Keys, %Code, %Name, $vDUCET);
+
+{
+    my($f, $fh);
+    foreach my $d ('.') {
+	$f = File::Spec->catfile($d, "Collate", "allkeys.txt");
+	last if open($fh, $f);
+	$f = undef;
+    }
+    croak "$PACKAGE: Collate/allkeys.txt is not found" if !defined $f;
+
+    while (my $line = <$fh>) {
+	chomp $line;
+	next if $line =~ /^\s*#/;
+	$vDUCET = $1 if $line =~ /^\@version\s*(\S*)/;
+
+	next if $line !~ /^\s*[0-9A-Fa-f]/;
+
+	my $name = '';
+	$line =~ s/[#%]\s*(.*)// and $name = $1;
+
+	# gets element
+	my($e, $k) = split /;/, $line;
+	trim($e);
+	trim($k);
+	$name =~ s/; QQ(?:CM|KN)//;
+
+	croak "Wrong Entry: <charList> must be separated by ';' ".
+	      "from <collElement>" if ! $k;
+
+	$Keys{$e} = $k;
+	$Code{$k} = $e;
+	$Name{$e} = $name;
+    }
+}
+opendir DIR, "data" or croak "no data";
+my @txts = grep !/^\./, readdir DIR;
+closedir DIR;
+
+mkdir 'Locale', 0666;
+for my $txt (@txts) {
+    my($fh, $ph);
+    my %locale_keys;
+    my $txtfile = File::Spec->catfile('data', $txt);
+    (my $pl = $txt) =~ s/\.txt\z/.pl/;
+    my $plfile = File::Spec->catfile('Locale', $pl);
+
+    open($fh, $txtfile) or croak "$PACKAGE: data/$txt is not found";
+    open($ph, ">$plfile") or croak "$PACKAGE: locale/$pl can't be made";
+
+    print $ph "+{\n";
+    my $entry = '';
+    while (<$fh>) {
+	if (/^backwards$/) {
+	    print $ph "   backwards => 2,\n";
+	    next;
+	}
+	if (/^\s*#/) {
+	    print $ph $_;
+	    next;
+	}
+
+	chomp;
+	my ($e,$rule) = split /;/;
+	trim($e);
+	my $name = $Name{$e} ? $Name{$e} : 'unknown';
+	if ($e =~ / / && $name eq 'unknown') {
+	    my @e = split ' ', $e;
+	    my @name = map { $Name{$_} ? $Name{$_} : 'unknown' } @e;
+	    $name = sprintf '<%s>', join ', ', @name;
+	}
+	my $newce = parserule($e, $rule, \%locale_keys);
+	$entry .= sprintf $ENT_FMT, $e, $newce, $name;
+	$locale_keys{$e} = $newce;
+
+	if ($Keys{$e}) { # duplicate for the decomposition
+	    my @ce = $Keys{$e} =~ /\[.*?\]/g;
+	    if (@ce > 1) {
+		my $ok = 1;
+		my $ee = '';
+		for my $c (@ce) {
+		    $ok = 0, last if !$Code{$c};
+		    $ee .= ' ' if $ee ne '';
+		    $ee .= $Code{$c};
+		}
+		if ($ok && @ce == 2 && !$locale_keys{$ee}) {
+		    $entry .= sprintf $ENT_FMT, $ee, $newce, $name;
+		    $locale_keys{$ee} = $newce;
+		}
+	    }
+	}
+    }
+    if ($entry) {
+	my $v = $vDUCET ? " # for DUCET v$vDUCET" : '';
+	print $ph "   entry => <<'ENTRY',$v\n";
+	print $ph $entry;
+	print $ph "ENTRY\n";
+    }
+    print $ph "};\n";
+    close $fh;
+    close $ph;
+}
+
+sub parserule {
+    (my $e   = shift) =~ s/ .*\z//;
+    my $rule = shift;
+    my $lockeys = shift;
+    my $result = '';
+    for (my $prerule = $rule; $rule ne ''; $prerule = $rule) {
+	$rule =~ s/^ +//;
+	if ($rule =~ s/^(\[[0-9A-Fa-f\.]+\])//) {
+	    $result .= $1;
+	    next;
+	}
+	if ($rule =~ s/^<([0-9A-Fa-f]+)>//) {
+	    $result .= $lockeys->{$1} || $Keys{$1};
+	    next;
+	}
+	my @base;
+	if ($rule =~ s/^([A-Za-z])//) {
+	    my $char = sprintf '%04X', unpack 'U', $1;
+	    my $keys = $Keys{$char};
+	    @base = _getHexArray($keys);
+	}
+	return if !@base;
+
+	while ($rule =~ s/^(([+-])\2*)(\d+)//) {
+	    my $idx = length($1) - 1;
+	    my $num = $2 eq '-' ? -$3 : $3;
+	    $base[$idx] += $num;
+	}
+	$base[3] = hex $e;
+	my $keys = '[.'.join('.', map { sprintf '%04X', $_ } @base).']';
+	$result .= $keys;
+	return $rule if $prerule eq $rule;
+    }
+    return $result;
+}
