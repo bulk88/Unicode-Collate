@@ -6,17 +6,23 @@ Collate/allkeys.txt
 Collate/keys.txt
 Collate/Locale.pm		Unicode::Collate::Locale
 Collate/Locale/cs.pl		Unicode::Collate::Locale
+Collate/Locale/eo.pl		Unicode::Collate::Locale
 Collate/Locale/es.pl		Unicode::Collate::Locale
 Collate/Locale/es_trad.pl	Unicode::Collate::Locale
 Collate/Locale/fr.pl		Unicode::Collate::Locale
 Collate/Locale/nn.pl		Unicode::Collate::Locale
 Collate/Locale/pl.pl		Unicode::Collate::Locale
+Collate/Locale/ro.pl		Unicode::Collate::Locale
+Collate/Locale/sv.pl		Unicode::Collate::Locale
 data/cs.txt		# Unicode::Collate::Locale
+data/eo.txt		# Unicode::Collate::Locale
 data/es.txt		# Unicode::Collate::Locale
 data/es_trad.txt	# Unicode::Collate::Locale
 data/fr.txt		# Unicode::Collate::Locale
 data/nn.txt		# Unicode::Collate::Locale
 data/pl.txt		# Unicode::Collate::Locale
+data/ro.txt		# Unicode::Collate::Locale
+data/sv.txt		# Unicode::Collate::Locale
 disableXS	# perl script to disable XSUB
 enableXS	# perl script to enable XSUB
 Makefile.PL
@@ -36,11 +42,17 @@ t/ignor.t
 t/illegal.t
 t/illegalp.t
 t/index.t
-t/locale_cs.t	test Unicode::Collate::Locale
-t/locale_fr.t	test Unicode::Collate::Locale
-t/locale_nn.t	test Unicode::Collate::Locale
-t/locale_pl.t	test Unicode::Collate::Locale
-t/locale_test.t	test Unicode::Collate::Locale
+t/loc_cs.t	test Unicode::Collate::Locale
+t/loc_eo.t	test Unicode::Collate::Locale
+t/loc_es.t	test Unicode::Collate::Locale
+t/loc_estr.t	test Unicode::Collate::Locale
+t/loc_fr.t	test Unicode::Collate::Locale
+t/loc_nb.t	test Unicode::Collate::Locale
+t/loc_nn.t	test Unicode::Collate::Locale
+t/loc_pl.t	test Unicode::Collate::Locale
+t/loc_ro.t	test Unicode::Collate::Locale
+t/loc_sv.t	test Unicode::Collate::Locale
+t/loc_test.t	test Unicode::Collate::Locale
 t/normal.t
 t/override.t
 t/rearrang.t
