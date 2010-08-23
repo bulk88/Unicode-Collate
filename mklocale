@@ -16,14 +16,20 @@
 #
 # Examples of the Rules
 # 00F1;n+1 ===> primary weight of 00F1 is greater than that of n by 1.
-#    only [A-Za-z] can be the base.
+#    Among literals, only [A-Za-z] can be the base.
 #    +1  primary weight greater by 1.
 #    -1  primary weight lesser by 1.
 #    ++1 and --1 for secondary weight, +++1 and ---1 for tertiary weight.
 #    a number followed by + or - is decimal.
 #
 # 01FD;<00E6><0301> ===> U+01FD eq U+00E6,U+0301
-#    <XXXX> cannot be followed by +1 etc.
+#    <XXXX> can be the base followed by +1 etc.
+#    Ex. 1D2D;<00C6>+++12
+#
+# 0064 0335;=
+# 0111;d++1<0335>
+#    '=' saves DUCET weights as it is.
+#    0064 0335;= prevents 0064 0335 from being equal to 0111.
 #
 use 5.006;
 use strict;
@@ -42,8 +48,34 @@ sub trim { $_[0] =~ s/^\ +//; $_[0] =~ s/\ +\z// }
 
 our $PACKAGE = 'Unicode::Collate, locale';
 our $ENT_FMT = "%-9s ; %s # %s\n";
+our $RE_CE   = '(?:\[[0-9A-Fa-f\.]+\])';
 
 my (%Keys, %Code, %Equiv, %Name, $vDUCET);
+my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
+=00C5=
+01FB;<00E5><0301>
+01FA;<00C5><0301>
+=00C6=
+1D2D;<00C6>+++12
+01FD;<00E6><0301>
+01FC;<00C6><0301>
+01E3;<00E6><0304>
+01E2;<00C6><0304>
+=00D8=
+01FF;<00F8><0301>
+01FE;<00D8><0301>
+=01B7=
+01EF;<0292><030C>
+01EE;<01B7><030C>
+OTHEREQUIV
+
+my %OtherEquiv;
+for my $o (@OtherEquiv) {
+    my @ln = split /\n/, $o;
+    my $uv = shift @ln;
+    $uv =~ tr/=//d;
+    $OtherEquiv{$uv} = \@ln;
+}
 
 {
     my($f, $fh);
@@ -108,22 +140,17 @@ for my $txt (@txts) {
 	    next;
 	}
 
-	chomp;
-	my ($e,$rule) = split /;/;
-	trim($e);
-	my $name = $Name{$e} ? $Name{$e} : 'unknown';
-	if ($e =~ / / && $name eq 'unknown') {
-	    my @e = split ' ', $e;
-	    my @name = map { $Name{$_} ? $Name{$_} : 'unknown' } @e;
-	    $name = sprintf '<%s>', join ', ', @name;
-	}
+	my($e,$rule) = split_e_rule($_);
+	my $name = getname($e);
+	my $eq_rule = $rule eq '=';
+	$rule = join '', map "<$_>", split ' ', $e if $eq_rule;
 	my $newce = parserule($e, $rule, \%locale_keys);
-	$entry .= sprintf $ENT_FMT, $e, $newce, $name;
+	$entry .= sprintf $ENT_FMT, $e, $newce, $name if !$eq_rule;
 	$locale_keys{$e} = $newce;
 
 	if ($Keys{$e}) { # duplicate for the decomposition
 	    my $key = $Keys{$e};
-	    my @ce = $key =~ /\[.*?\]/g;
+	    my @ce = $key =~ /$RE_CE/go;
 	    if (@ce > 1) {
 		my $ok = 1;
 		my $ee = '';
@@ -132,7 +159,12 @@ for my $txt (@txts) {
 		    $ee .= ' ' if $ee ne '';
 		    $ee .= $Code{$c};
 		}
-		if ($ok && @ce == 2 && !$locale_keys{$ee}) {
+		my $out = $ee =~ /^(.+) ([^ ]+)\z/ &&
+			  $locale_keys{$1} && $Keys{$2} &&
+			  $locale_keys{$1}.''.$Keys{$2} eq $newce;
+			# if $ee is base $1 and combining $2, and
+			#    $1 is tailored and $2 is usual.
+		if ($ok && !$out && !$locale_keys{$ee}) {
 		    $entry .= sprintf $ENT_FMT, $ee, $newce, $name;
 		    $locale_keys{$ee} = $newce;
 		}
@@ -142,6 +174,16 @@ for my $txt (@txts) {
 		    $entry .= sprintf $ENT_FMT, $eq, $newce, $Name{$eq};
 		    $locale_keys{$eq} = $newce;
 		}
+	    }
+	}
+
+	if ($OtherEquiv{$e}) {
+	    for my $o (@{ $OtherEquiv{$e} }) {
+		my($e,$rule) = split_e_rule($o);
+		my $name = getname($e);
+		my $newce = parserule($e, $rule, \%locale_keys);
+		$entry .= sprintf $ENT_FMT, $e, $newce, $name;
+		$locale_keys{$e} = $newce;
 	    }
 	}
     }
@@ -156,6 +198,22 @@ for my $txt (@txts) {
     close $ph;
 }
 
+sub split_e_rule {
+    my $line = shift;
+    chomp $line;
+    my @ary = split /;/, $line;
+    trim($ary[0]);
+    return @ary;
+}
+
+sub getname {
+    my $e = shift;
+    return $Name{$e} if $Name{$e};  # single codepoint without <>
+    my @e = split ' ', $e;
+    my @name = map { $Name{$_} ? $Name{$_} : 'unknown' } @e;
+    return sprintf '<%s>', join ', ', @name;
+}
+
 sub parserule {
     (my $e   = shift) =~ s/ .*\z//;
     my $rule = shift;
@@ -163,31 +221,38 @@ sub parserule {
     my $result = '';
     for (my $prerule = $rule; $rule ne ''; $prerule = $rule) {
 	$rule =~ s/^ +//;
-	if ($rule =~ s/^(\[[0-9A-Fa-f\.]+\])//) {
+	if ($rule =~ s/^($RE_CE)//o) {
 	    $result .= $1;
 	    next;
 	}
-	if ($rule =~ s/^<([0-9A-Fa-f]+)>//) {
-	    $result .= $lockeys->{$1} || $Keys{$1};
-	    next;
-	}
-	my @base;
-	if ($rule =~ s/^([A-Za-z])//) {
-	    my $char = sprintf '%04X', unpack 'U', $1;
-	    my $keys = $Keys{$char};
-	    @base = _getHexArray($keys);
-	}
-	return if !@base;
 
+	my $key;
+	if ($rule =~ s/^(<[0-9A-Fa-f]+>|[A-Za-z])//) {
+	    my $c = $1;
+	    $c = sprintf '%04X', unpack 'U', $c if $c !~ tr/<>//d;
+	    $key = $lockeys->{$c} || $Keys{$c};
+	}
+
+	my @base;
+	for my $k ($key =~ /$RE_CE/go) {
+	    push @base, [_getHexArray($k)];
+	}
+	return if !@base; # the rule seems wrong
+
+	my $replaced = 0;
 	while ($rule =~ s/^(([+-])\2*)(\d+)//) {
 	    my $idx = length($1) - 1;
 	    my $num = $2 eq '-' ? -$3 : $3;
-	    $base[$idx] += $num;
+	    $base[0][$idx] += $num;
+	    ++$replaced;
 	}
-	$base[3] = hex $e;
-	my $keys = '[.'.join('.', map { sprintf '%04X', $_ } @base).']';
-	$result .= $keys;
-	return $rule if $prerule eq $rule;
+
+	for my $c (@base) {
+	    $c->[3] = hex $e if $replaced;
+	    my $keys = '[.'.join('.', map { sprintf '%04X', $_ } @$c).']';
+	    $result .= $keys;
+	}
+	croak "something wrong at $rule" if $prerule eq $rule;
     }
     return $result;
 }

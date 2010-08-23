@@ -5,24 +5,36 @@ Collate.xs	extension for XSUB
 Collate/allkeys.txt
 Collate/keys.txt
 Collate/Locale.pm		Unicode::Collate::Locale
+Collate/Locale/ca.pl		Unicode::Collate::Locale
 Collate/Locale/cs.pl		Unicode::Collate::Locale
 Collate/Locale/eo.pl		Unicode::Collate::Locale
 Collate/Locale/es.pl		Unicode::Collate::Locale
 Collate/Locale/es_trad.pl	Unicode::Collate::Locale
+Collate/Locale/et.pl		Unicode::Collate::Locale
+Collate/Locale/fi.pl		Unicode::Collate::Locale
 Collate/Locale/fr.pl		Unicode::Collate::Locale
+Collate/Locale/lv.pl		Unicode::Collate::Locale
 Collate/Locale/nn.pl		Unicode::Collate::Locale
 Collate/Locale/pl.pl		Unicode::Collate::Locale
 Collate/Locale/ro.pl		Unicode::Collate::Locale
+Collate/Locale/sk.pl		Unicode::Collate::Locale
+Collate/Locale/sl.pl		Unicode::Collate::Locale
 Collate/Locale/sv.pl		Unicode::Collate::Locale
-data/cs.txt		# Unicode::Collate::Locale
-data/eo.txt		# Unicode::Collate::Locale
-data/es.txt		# Unicode::Collate::Locale
-data/es_trad.txt	# Unicode::Collate::Locale
-data/fr.txt		# Unicode::Collate::Locale
-data/nn.txt		# Unicode::Collate::Locale
-data/pl.txt		# Unicode::Collate::Locale
-data/ro.txt		# Unicode::Collate::Locale
-data/sv.txt		# Unicode::Collate::Locale
+data/ca.txt		# preparating Unicode::Collate::Locale
+data/cs.txt		# preparating Unicode::Collate::Locale
+data/eo.txt		# preparating Unicode::Collate::Locale
+data/es.txt		# preparating Unicode::Collate::Locale
+data/es_trad.txt	# preparating Unicode::Collate::Locale
+data/et.txt		# preparating Unicode::Collate::Locale
+data/fi.txt		# preparating Unicode::Collate::Locale
+data/fr.txt		# preparating Unicode::Collate::Locale
+data/lv.txt		# preparating Unicode::Collate::Locale
+data/nn.txt		# preparating Unicode::Collate::Locale
+data/pl.txt		# preparating Unicode::Collate::Locale
+data/ro.txt		# preparating Unicode::Collate::Locale
+data/sk.txt		# preparating Unicode::Collate::Locale
+data/sl.txt		# preparating Unicode::Collate::Locale
+data/sv.txt		# preparating Unicode::Collate::Locale
 disableXS	# perl script to disable XSUB
 enableXS	# perl script to enable XSUB
 Makefile.PL
@@ -30,7 +42,7 @@ MANIFEST	MANIFEST for XSUB
 MANIFEST.N	# MANIFEST for NoXSUB (pure perl)
 META.yml	# meta file
 mkheader	perl script to make C header files for XSUB
-mklocale	# Unicode::Collate::Locale
+mklocale	# preparating Unicode::Collate::Locale
 README		# README
 t/altern.t
 t/cjkrange.t
@@ -42,18 +54,24 @@ t/ignor.t
 t/illegal.t
 t/illegalp.t
 t/index.t
+t/loc_ca.t	test Unicode::Collate::Locale
 t/loc_cs.t	test Unicode::Collate::Locale
 t/loc_eo.t	test Unicode::Collate::Locale
 t/loc_es.t	test Unicode::Collate::Locale
 t/loc_estr.t	test Unicode::Collate::Locale
+t/loc_et.t	test Unicode::Collate::Locale
+t/loc_fi.t	test Unicode::Collate::Locale
 t/loc_fr.t	test Unicode::Collate::Locale
+t/loc_lv.t	test Unicode::Collate::Locale
 t/loc_nb.t	test Unicode::Collate::Locale
 t/loc_nn.t	test Unicode::Collate::Locale
 t/loc_pl.t	test Unicode::Collate::Locale
 t/loc_ro.t	test Unicode::Collate::Locale
+t/loc_sk.t	test Unicode::Collate::Locale
+t/loc_sl.t	test Unicode::Collate::Locale
 t/loc_sv.t	test Unicode::Collate::Locale
 t/loc_test.t	test Unicode::Collate::Locale
-t/normal.t
+t/normal.t	test using Unicode::Normalize
 t/override.t
 t/rearrang.t
 t/test.t
