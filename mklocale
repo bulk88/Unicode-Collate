@@ -14,7 +14,8 @@
 #    Locale/*.pl
 #   (need to be moved to Collate/Locale/*.pl to install them)
 #
-# Examples of the Rules
+# == Examples of the Rules ==
+#
 # 00F1;n+1 ===> primary weight of 00F1 is greater than that of n by 1.
 #    Among literals, only [A-Za-z] can be the base.
 #    +1  primary weight greater by 1.
@@ -30,6 +31,16 @@
 # 0111;d++1<0335>
 #    '=' saves DUCET weights as it is.
 #    0064 0335;= prevents 0064 0335 from being equal to 0111.
+#
+# {ch};c+1   ===> 0063 0068;c+1
+# {K'};Q++1  ===> 004B 0027;Q++1
+#     { } before ; encloses a literal: [A-Za-z'] (alphabets or apostrophe).
+#
+# backwards
+#    backwards => 2
+#
+# upper
+#    upper_before_lower => 1
 #
 use 5.006;
 use strict;
@@ -135,6 +146,10 @@ for my $txt (@txts) {
 	    print $ph "   backwards => 2,\n";
 	    next;
 	}
+	if (/^upper$/) {
+	    print $ph "   upper_before_lower => 1,\n";
+	    next;
+	}
 	if (/^\s*#/) {
 	    print $ph $_;
 	    next;
@@ -198,12 +213,20 @@ for my $txt (@txts) {
     close $ph;
 }
 
+sub getunicode {
+    my $c = shift;
+    my @c = split //, $c;
+    return join ' ', map { sprintf '%04X', unpack 'U', $_ } @c;
+}
+
 sub split_e_rule {
     my $line = shift;
     chomp $line;
-    my @ary = split /;/, $line;
-    trim($ary[0]);
-    return @ary;
+    my($e, $r) = split /;/, $line;
+    $e =~ s/\{([A-Za-z']+)\}/' '.getunicode($1).' '/ge;
+    $e =~ s/ +/ /g;
+    trim($e);
+    return ($e, $r);
 }
 
 sub getname {
@@ -229,7 +252,8 @@ sub parserule {
 	my $key;
 	if ($rule =~ s/^(<[0-9A-Fa-f]+>|[A-Za-z])//) {
 	    my $c = $1;
-	    $c = sprintf '%04X', unpack 'U', $c if $c !~ tr/<>//d;
+	    $c = getunicode($c) if $c !~ tr/<>//d;
+	    croak "<$c> is too short" if 4 > length $c;
 	    $key = $lockeys->{$c} || $Keys{$c};
 	}
 
@@ -237,7 +261,7 @@ sub parserule {
 	for my $k ($key =~ /$RE_CE/go) {
 	    push @base, [_getHexArray($k)];
 	}
-	return if !@base; # the rule seems wrong
+	croak "the rule seems wrong at $prerule" if !@base;
 
 	my $replaced = 0;
 	while ($rule =~ s/^(([+-])\2*)(\d+)//) {
