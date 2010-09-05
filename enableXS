@@ -1,4 +1,3 @@
-
 use File::Copy qw();
 
 if (-f "Collate.xsX") {
@@ -11,4 +10,3 @@ if (-f "Collate.xsX") {
 	and File::Copy::move('Collate.xsX',	'Collate.xs')
 	and File::Copy::move('Collate.pmX',	'Collate.pm');
 }
-

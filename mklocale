@@ -63,6 +63,9 @@ our $RE_CE   = '(?:\[[0-9A-Fa-f\.]+\])';
 
 my (%Keys, %Code, %Equiv, %Name, $vDUCET);
 my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
+=00C4=
+01DF;<00E4><0304>
+01DE;<00C4><0304>
 =00C5=
 01FB;<00E5><0301>
 01FA;<00C5><0301>
@@ -72,9 +75,21 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 01FC;<00C6><0301>
 01E3;<00E6><0304>
 01E2;<00C6><0304>
+=00D6=
+022B;<00F6><0304>
+022A;<00D6><0304>
 =00D8=
 01FF;<00F8><0301>
 01FE;<00D8><0301>
+=00DC=
+01DC;<00FC><0300>
+01DB;<00DC><0300>
+01D8;<00FC><0301>
+01D7;<00DC><0301>
+01D6;<00FC><0304>
+01D5;<00DC><0304>
+01DA;<00FC><030C>
+01D9;<00DC><030C>
 =01B7=
 01EF;<0292><030C>
 01EE;<01B7><030C>
@@ -150,8 +165,8 @@ for my $txt (@txts) {
 	    print $ph "   upper_before_lower => 1,\n";
 	    next;
 	}
-	if (/^\s*#/) {
-	    print $ph $_;
+	if (/^\s*(#\s*)/) {
+	    print $ph $_ if $1 ne '#';
 	    next;
 	}
 
@@ -174,11 +189,15 @@ for my $txt (@txts) {
 		    $ee .= ' ' if $ee ne '';
 		    $ee .= $Code{$c};
 		}
-		my $out = $ee =~ /^(.+) ([^ ]+)\z/ &&
-			  $locale_keys{$1} && $Keys{$2} &&
-			  $locale_keys{$1}.''.$Keys{$2} eq $newce;
-			# if $ee is base $1 and combining $2, and
-			#    $1 is tailored and $2 is usual.
+		
+		# if $ee is base $1 and combining $2.
+		my $out = $ee =~ /^(.+) ([^ ]+)\z/ && (
+			 ($locale_keys{$1} && $Keys{$2} &&
+			  $locale_keys{$1}.''.$Keys{$2} eq $newce)
+				||
+			 ($Keys{$1} && $locale_keys{$2} &&
+			  $Keys{$1}.''.$locale_keys{$2} eq $newce)
+		    );
 		if ($ok && !$out && !$locale_keys{$ee}) {
 		    $entry .= sprintf $ENT_FMT, $ee, $newce, $name;
 		    $locale_keys{$ee} = $newce;
