@@ -63,6 +63,17 @@ our $RE_CE   = '(?:\[[0-9A-Fa-f\.]+\])';
 
 my (%Keys, %Code, %Equiv, %Name, $vDUCET);
 my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
+=00C2=
+1EA7;<00E2><0300>
+1EA6;<00C2><0300>
+1EA5;<00E2><0301>
+1EA4;<00C2><0301>
+1EAB;<00E2><0303>
+1EAA;<00C2><0303>
+1EA9;<00E2><0309>
+1EA8;<00C2><0309>
+1EAD;<00E2><0323>
+1EAC;<00C2><0323>
 =00C4=
 01DF;<00E4><0304>
 01DE;<00C4><0304>
@@ -75,6 +86,28 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 01FC;<00C6><0301>
 01E3;<00E6><0304>
 01E2;<00C6><0304>
+=00CA=
+1EC1;<00EA><0300>
+1EC0;<00CA><0300>
+1EBF;<00EA><0301>
+1EBE;<00CA><0301>
+1EC5;<00EA><0303>
+1EC4;<00CA><0303>
+1EC3;<00EA><0309>
+1EC2;<00CA><0309>
+1EC7;<00EA><0323>
+1EC6;<00CA><0323>
+=00D4=
+1ED3;<00F4><0300>
+1ED2;<00D4><0300>
+1ED1;<00F4><0301>
+1ED0;<00D4><0301>
+1ED7;<00F4><0303>
+1ED6;<00D4><0303>
+1ED5;<00F4><0309>
+1ED4;<00D4><0309>
+1ED9;<00F4><0323>
+1ED8;<00D4><0323>
 =00D6=
 022B;<00F6><0304>
 022A;<00D6><0304>
@@ -90,9 +123,94 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 01D5;<00DC><0304>
 01DA;<00FC><030C>
 01D9;<00DC><030C>
+=0102=
+1EB1;<0103><0300>
+1EB0;<0102><0300>
+1EAF;<0103><0301>
+1EAE;<0102><0301>
+1EB5;<0103><0303>
+1EB4;<0102><0303>
+1EB3;<0103><0309>
+1EB2;<0102><0309>
+1EB7;<0103><0323>
+1EB6;<0102><0323>
+=01A0=
+1EDD;<01A1><0300>
+1EDC;<01A0><0300>
+1EDB;<01A1><0301>
+1EDA;<01A0><0301>
+1EE1;<01A1><0303>
+1EE0;<01A0><0303>
+1EDF;<01A1><0309>
+1EDE;<01A0><0309>
+1EE3;<01A1><0323>
+1EE2;<01A0><0323>
+=01AF=
+1EEB;<01B0><0300>
+1EEA;<01AF><0300>
+1EE9;<01B0><0301>
+1EE8;<01AF><0301>
+1EEF;<01B0><0303>
+1EEE;<01AF><0303>
+1EEC;<01AF><0309>
+1EED;<01B0><0309>
+1EF0;<01AF><0323>
+1EF1;<01B0><0323>
 =01B7=
 01EF;<0292><030C>
 01EE;<01B7><030C>
+=0301=
+00E1;a<0301>
+00C1;A<0301>
+00E9;e<0301>
+00C9;E<0301>
+00ED;i<0301>
+00CD;I<0301>
+00F3;o<0301>
+00D3;O<0301>
+00FA;u<0301>
+00DA;U<0301>
+00FD;y<0301>
+00DD;Y<0301>
+=0303=
+00E3;a<0303>
+00C3;A<0303>
+1EBD;e<0303>
+1EBC;E<0303>
+0129;i<0303>
+0128;I<0303>
+00F5;o<0303>
+00D5;O<0303>
+0169;u<0303>
+0168;U<0303>
+1EF9;y<0303>
+1EF8;Y<0303>
+=0309=
+1EA3;a<0309>
+1EA2;A<0309>
+1EBB;e<0309>
+1EBA;E<0309>
+1EC9;i<0309>
+1EC8;I<0309>
+1ECF;o<0309>
+1ECE;O<0309>
+1EE7;u<0309>
+1EE6;U<0309>
+1EF7;y<0309>
+1EF6;Y<0309>
+=0323=
+1EA1;a<0323>
+1EA0;A<0323>
+1EB9;e<0323>
+1EB8;E<0323>
+1ECB;i<0323>
+1ECA;I<0323>
+1ECD;o<0323>
+1ECC;O<0323>
+1EE5;u<0323>
+1EE4;U<0323>
+1EF5;y<0323>
+1EF4;Y<0323>
 OTHEREQUIV
 
 my %OtherEquiv;
@@ -148,7 +266,8 @@ for my $txt (@txts) {
     my($fh, $ph);
     my %locale_keys;
     my $txtfile = File::Spec->catfile('data', $txt);
-    (my $pl = $txt) =~ s/\.txt\z/.pl/;
+    my $pl = $txt;
+       $pl =~ s/\.txt\z/.pl/ or croak "$PACKAGE: data/$txt is not .txt";
     my $plfile = File::Spec->catfile('Locale', $pl);
 
     open($fh, $txtfile) or croak "$PACKAGE: data/$txt is not found";
@@ -174,11 +293,11 @@ for my $txt (@txts) {
 	my $name = getname($e);
 	my $eq_rule = $rule eq '=';
 	$rule = join '', map "<$_>", split ' ', $e if $eq_rule;
-	my $newce = parserule($e, $rule, \%locale_keys);
+	my ($newce, $simpdec) = parserule($e, $rule, \%locale_keys);
 	$entry .= sprintf $ENT_FMT, $e, $newce, $name if !$eq_rule;
 	$locale_keys{$e} = $newce;
 
-	if ($Keys{$e}) { # duplicate for the decomposition
+	if (!$simpdec && $Keys{$e}) { # duplicate for the decomposition
 	    my $key = $Keys{$e};
 	    my @ce = $key =~ /$RE_CE/go;
 	    if (@ce > 1) {
@@ -189,16 +308,7 @@ for my $txt (@txts) {
 		    $ee .= ' ' if $ee ne '';
 		    $ee .= $Code{$c};
 		}
-		
-		# if $ee is base $1 and combining $2.
-		my $out = $ee =~ /^(.+) ([^ ]+)\z/ && (
-			 ($locale_keys{$1} && $Keys{$2} &&
-			  $locale_keys{$1}.''.$Keys{$2} eq $newce)
-				||
-			 ($Keys{$1} && $locale_keys{$2} &&
-			  $Keys{$1}.''.$locale_keys{$2} eq $newce)
-		    );
-		if ($ok && !$out && !$locale_keys{$ee}) {
+		if ($ok && !$locale_keys{$ee}) {
 		    $entry .= sprintf $ENT_FMT, $ee, $newce, $name;
 		    $locale_keys{$ee} = $newce;
 		}
@@ -215,7 +325,7 @@ for my $txt (@txts) {
 	    for my $o (@{ $OtherEquiv{$e} }) {
 		my($e,$rule) = split_e_rule($o);
 		my $name = getname($e);
-		my $newce = parserule($e, $rule, \%locale_keys);
+		(my $newce, undef) = parserule($e, $rule, \%locale_keys);
 		$entry .= sprintf $ENT_FMT, $e, $newce, $name;
 		$locale_keys{$e} = $newce;
 	    }
@@ -261,6 +371,8 @@ sub parserule {
     my $rule = shift;
     my $lockeys = shift;
     my $result = '';
+    my $simple_decomp = 1; # rules containing only [A-Za-z] or <XXXX>
+
     for (my $prerule = $rule; $rule ne ''; $prerule = $rule) {
 	$rule =~ s/^ +//;
 	if ($rule =~ s/^($RE_CE)//o) {
@@ -290,6 +402,7 @@ sub parserule {
 	    ++$replaced;
 	}
 
+	$simple_decomp = 0 if $replaced;
 	for my $c (@base) {
 	    $c->[3] = hex $e if $replaced;
 	    my $keys = '[.'.join('.', map { sprintf '%04X', $_ } @$c).']';
@@ -297,5 +410,5 @@ sub parserule {
 	}
 	croak "something wrong at $rule" if $prerule eq $rule;
     }
-    return $result;
+    return($result, $simple_decomp);
 }
