@@ -36,6 +36,10 @@
 # {K'};Q++1  ===> 004B 0027;Q++1
 #     { } before ; encloses a literal: [A-Za-z'] (alphabets or apostrophe).
 #
+# {gh}0335;<{g}0127> ===> U+0067,U+0068,U+0335 eq U+0067,U+0127
+# {dZ}030C;<{d}017D> ===> U+0064,U+005A,U+030C eq U+0064,U+017D
+#     < > after ; can enclose a unit comprising plural XXXX or {literal}.
+#
 # backwards
 #    backwards => 2
 #
@@ -56,6 +60,7 @@ BEGIN {
 
 sub _getHexArray { map hex, $_[0] =~ /([0-9a-fA-F]+)/g }
 sub trim { $_[0] =~ s/^\ +//; $_[0] =~ s/\ +\z// }
+sub ce { '[.'.join('.', map { sprintf '%04X', $_ } @_).']' }
 
 our $PACKAGE = 'Unicode::Collate, locale';
 our $ENT_FMT = "%-9s ; %s # %s\n";
@@ -63,7 +68,7 @@ our $RE_CE   = '(?:\[[0-9A-Fa-f\.]+\])';
 
 my (%Keys, %Code, %Equiv, %Name, $vDUCET);
 my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
-=00C2=
+=00C2= (a-circ)
 1EA7;<00E2><0300>
 1EA6;<00C2><0300>
 1EA5;<00E2><0301>
@@ -74,19 +79,19 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1EA8;<00C2><0309>
 1EAD;<00E2><0323>
 1EAC;<00C2><0323>
-=00C4=
+=00C4= (a-uml)
 01DF;<00E4><0304>
 01DE;<00C4><0304>
-=00C5=
+=00C5= (a-ring)
 01FB;<00E5><0301>
 01FA;<00C5><0301>
-=00C6=
+=00C6= (ae-lig)
 1D2D;<00C6>+++12
 01FD;<00E6><0301>
 01FC;<00C6><0301>
 01E3;<00E6><0304>
 01E2;<00C6><0304>
-=00CA=
+=00CA= (e-circ)
 1EC1;<00EA><0300>
 1EC0;<00CA><0300>
 1EBF;<00EA><0301>
@@ -97,7 +102,7 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1EC2;<00CA><0309>
 1EC7;<00EA><0323>
 1EC6;<00CA><0323>
-=00D4=
+=00D4= (o-circ)
 1ED3;<00F4><0300>
 1ED2;<00D4><0300>
 1ED1;<00F4><0301>
@@ -108,13 +113,22 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1ED4;<00D4><0309>
 1ED9;<00F4><0323>
 1ED8;<00D4><0323>
-=00D6=
+=00D5= (o-tilde)
+1E4D;<00F5><0301>
+1E4C;<00D5><0301>
+022D;<00F5><0304>
+022C;<00D5><0304>
+1E4F;<00F5><0308>
+1E4E;<00D5><0308>
+1EE1;<00F5><031B>
+1EE0;<00D5><031B>
+=00D6= (o-uml)
 022B;<00F6><0304>
 022A;<00D6><0304>
-=00D8=
+=00D8= (o-slash)
 01FF;<00F8><0301>
 01FE;<00D8><0301>
-=00DC=
+=00DC= (u-uml)
 01DC;<00FC><0300>
 01DB;<00DC><0300>
 01D8;<00FC><0301>
@@ -123,7 +137,7 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 01D5;<00DC><0304>
 01DA;<00FC><030C>
 01D9;<00DC><030C>
-=0102=
+=0102= (a-breve)
 1EB1;<0103><0300>
 1EB0;<0102><0300>
 1EAF;<0103><0301>
@@ -134,7 +148,7 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1EB2;<0102><0309>
 1EB7;<0103><0323>
 1EB6;<0102><0323>
-=01A0=
+=01A0= (o-horn)
 1EDD;<01A1><0300>
 1EDC;<01A0><0300>
 1EDB;<01A1><0301>
@@ -145,21 +159,21 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1EDE;<01A0><0309>
 1EE3;<01A1><0323>
 1EE2;<01A0><0323>
-=01AF=
+=01AF= (u-horn)
 1EEB;<01B0><0300>
 1EEA;<01AF><0300>
 1EE9;<01B0><0301>
 1EE8;<01AF><0301>
 1EEF;<01B0><0303>
 1EEE;<01AF><0303>
-1EEC;<01AF><0309>
 1EED;<01B0><0309>
-1EF0;<01AF><0323>
+1EEC;<01AF><0309>
 1EF1;<01B0><0323>
-=01B7=
+1EF0;<01AF><0323>
+=01B7= (ezh)
 01EF;<0292><030C>
 01EE;<01B7><030C>
-=0301=
+=0301= (acute)
 00E1;a<0301>
 00C1;A<0301>
 00E9;e<0301>
@@ -172,7 +186,7 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 00DA;U<0301>
 00FD;y<0301>
 00DD;Y<0301>
-=0303=
+=0303= (tilde)
 00E3;a<0303>
 00C3;A<0303>
 1EBD;e<0303>
@@ -185,7 +199,7 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 0168;U<0303>
 1EF9;y<0303>
 1EF8;Y<0303>
-=0309=
+=0309= (hook-above)
 1EA3;a<0309>
 1EA2;A<0309>
 1EBB;e<0309>
@@ -198,7 +212,7 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1EE6;U<0309>
 1EF7;y<0309>
 1EF6;Y<0309>
-=0323=
+=0323= (dot-below)
 1EA1;a<0323>
 1EA0;A<0323>
 1EB9;e<0323>
@@ -211,13 +225,26 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1EE4;U<0323>
 1EF5;y<0323>
 1EF4;Y<0323>
+=1EB8= (e-dot-below)
+1EC7;<1EB9><0302>
+1EC6;<1EB8><0302>
+=1ECC= (o-dot-below)
+1ED9;<1ECD><0302>
+1ED8;<1ECC><0302>
+1EE3;<1ECD><031B>
+1EE2;<1ECC><031B>
+=1EE4= (u-dot-below)
+1EF1;<1EE5><031B>
+1EF0;<1EE4><031B>
 OTHEREQUIV
 
 my %OtherEquiv;
 for my $o (@OtherEquiv) {
     my @ln = split /\n/, $o;
     my $uv = shift @ln;
+    $uv =~ s/ *\([a-z-]+\) *//;
     $uv =~ tr/=//d;
+    croak "$PACKAGE: $uv is invalid in OTHEREQUIV" if $uv !~ /^[0-9A-F]+\z/;
     $OtherEquiv{$uv} = \@ln;
 }
 
@@ -244,7 +271,7 @@ for my $o (@OtherEquiv) {
 	my($e, $k) = split /;/, $line;
 	trim($e);
 	trim($k);
-	$name =~ s/; QQ(?:CM|KN)//;
+	$name =~ s/; QQ[A-Z]+//;
 
 	next if $k eq '[.0000.0000.0000.0000]';
 
@@ -348,14 +375,19 @@ sub getunicode {
     return join ' ', map { sprintf '%04X', unpack 'U', $_ } @c;
 }
 
+sub parse_element {
+    my $e = shift;
+    $e =~ s/\{([A-Za-z']+)\}/' '.getunicode($1).' '/ge;
+    $e =~ s/ +/ /g;
+    trim($e);
+    return $e;
+}
+
 sub split_e_rule {
     my $line = shift;
     chomp $line;
     my($e, $r) = split /;/, $line;
-    $e =~ s/\{([A-Za-z']+)\}/' '.getunicode($1).' '/ge;
-    $e =~ s/ +/ /g;
-    trim($e);
-    return ($e, $r);
+    return (parse_element($e), $r);
 }
 
 sub getname {
@@ -376,14 +408,16 @@ sub parserule {
     for (my $prerule = $rule; $rule ne ''; $prerule = $rule) {
 	$rule =~ s/^ +//;
 	if ($rule =~ s/^($RE_CE)//o) {
-	    $result .= $1;
+	    my $k = $1;
+	    my @c = _getHexArray($k);
+	    $result .= ce(@c);
 	    next;
 	}
 
 	my $key;
-	if ($rule =~ s/^(<[0-9A-Fa-f]+>|[A-Za-z])//) {
-	    my $c = $1;
-	    $c = getunicode($c) if $c !~ tr/<>//d;
+	if ($rule =~ s/^(<[0-9A-Za-z'{ }]+>|[A-Za-z])//) {
+	    my $e = $1;
+	    my $c = $e =~ tr/<>//d ? parse_element($e) : getunicode($e);
 	    croak "<$c> is too short" if 4 > length $c;
 	    $key = $lockeys->{$c} || $Keys{$c};
 	}
@@ -405,8 +439,7 @@ sub parserule {
 	$simple_decomp = 0 if $replaced;
 	for my $c (@base) {
 	    $c->[3] = hex $e if $replaced;
-	    my $keys = '[.'.join('.', map { sprintf '%04X', $_ } @$c).']';
-	    $result .= $keys;
+	    $result .= ce(@$c);
 	}
 	croak "something wrong at $rule" if $prerule eq $rule;
     }
