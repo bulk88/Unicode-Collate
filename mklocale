@@ -170,9 +170,6 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1EEC;<01AF><0309>
 1EF1;<01B0><0323>
 1EF0;<01AF><0323>
-=01B7= (ezh)
-01EF;<0292><030C>
-01EE;<01B7><030C>
 =0301= (acute)
 00E1;a<0301>
 00C1;A<0301>
@@ -225,6 +222,9 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1EE4;U<0323>
 1EF5;y<0323>
 1EF4;Y<0323>
+=0629= (arabic-teh-marbuta)
+FE93;<0629>
+FE94;<0629>
 =1EB8= (e-dot-below)
 1EC7;<1EB9><0302>
 1EC6;<1EB8><0302>
@@ -321,8 +321,11 @@ for my $txt (@txts) {
 	my $eq_rule = $rule eq '=';
 	$rule = join '', map "<$_>", split ' ', $e if $eq_rule;
 	my ($newce, $simpdec) = parserule($e, $rule, \%locale_keys);
-	$entry .= sprintf $ENT_FMT, $e, $newce, $name if !$eq_rule;
-	$locale_keys{$e} = $newce;
+
+	if (!$locale_keys{$e}) {
+	    $entry .= sprintf $ENT_FMT, $e, $newce, $name if !$eq_rule;
+	    $locale_keys{$e} = $newce;
+	}
 
 	if (!$simpdec && $Keys{$e}) { # duplicate for the decomposition
 	    my $key = $Keys{$e};
@@ -342,6 +345,7 @@ for my $txt (@txts) {
 	    }
 	    if ($Equiv{$key}) {
 		for my $eq (@{ $Equiv{$key} }) {
+		    next if $locale_keys{$eq};
 		    $entry .= sprintf $ENT_FMT, $eq, $newce, $Name{$eq};
 		    $locale_keys{$eq} = $newce;
 		}
@@ -353,8 +357,10 @@ for my $txt (@txts) {
 		my($e,$rule) = split_e_rule($o);
 		my $name = getname($e);
 		(my $newce, undef) = parserule($e, $rule, \%locale_keys);
-		$entry .= sprintf $ENT_FMT, $e, $newce, $name;
-		$locale_keys{$e} = $newce;
+		if (!$locale_keys{$e}) {
+		    $entry .= sprintf $ENT_FMT, $e, $newce, $name;
+		    $locale_keys{$e} = $newce;
+		}
 	    }
 	}
     }
