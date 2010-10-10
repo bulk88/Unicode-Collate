@@ -1,17 +1,25 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         Unicode-Collate
-version:      0.62
-version_from: Collate.pm
-installdirs:  perl
-requires:
-    Carp:                          0
-    constant:                      0
-    DynaLoader:                    0
-    File::Spec:                    0
-    strict:                        0
-    Test:                          0
-    warnings:                      0
-
+---
+name: Unicode-Collate
+abstract: Unicode Collation Algorithm
+version: 0.63
+author:
+  - SADAHIRO Tomoyuki <SADAHIRO@cpan.org>
+license: perl
 distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.17
+requires:
+  Carp: 0
+  DynaLoader: 0
+  File::Spec: 0
+  Test: 0
+  constant: 0
+  strict: 0
+  warnings: 0
+build_requires:
+  ExtUtils::MakeMaker: 0
+configure_requires:
+  ExtUtils::MakeMaker: 0
+dynamic_config: 0
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+generated_by: 'ExtUtils::MakeMaker version 6.57_05'

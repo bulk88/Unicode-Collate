@@ -14,7 +14,7 @@ use File::Spec;
 
 no warnings 'utf8';
 
-our $VERSION = '0.62';
+our $VERSION = '0.63';
 our $PACKAGE = __PACKAGE__;
 
 require DynaLoader;
@@ -106,6 +106,7 @@ our @ChangeNG = qw/
     ignoreChar ignoreName undefChar undefName variableTable
     versionTable alternateTable backwardsTable forwardsTable rearrangeTable
     derivCode normCode rearrangeHash backwardsFlag
+    suppress suppressHash
     __useXS
   /;
 # The hash key 'ignored' is deleted at v 0.21.
@@ -245,6 +246,11 @@ sub new
 	$self->{__useXS} = \&_fetch_simple;
     } # XS only
 
+    # keys of $self->{suppressHash} are $self->{suppress}.
+    if ($self->{suppress} && @{ $self->{suppress} }) {
+	@{ $self->{suppressHash} }{ @{ $self->{suppress} } } = ();
+    } # before read_table()
+
     # If undef is passed explicitly, no file is read.
     $self->{table} = $KeyFile if ! exists $self->{table};
     $self->read_table() if defined $self->{table};
@@ -363,7 +369,8 @@ sub parseEntry
 
     @uv = _getHexArray($e);
     return if !@uv;
-
+    return if @uv > 1 && $self->{suppressHash} &&
+		  exists $self->{suppressHash}{$uv[0]};
     $entry = join(CODE_SEP, @uv); # in JCPS
 
     if (defined $self->{undefChar} || defined $self->{ignoreChar}) {
@@ -628,31 +635,27 @@ sub getSortKey
     my $self = shift;
     my $rEnt = $self->splitEnt(shift); # get an arrayref of JCPS
     my $vers = $self->{UCA_Version};
+    my $vbl  = $self->{variable};
+    my $term = $self->{hangul_terminator};
 
     my @buf; # weight arrays
-    if ($self->{hangul_terminator}) {
+    if ($term) {
 	my $preHST = '';
+	my $termCE = _varCE($vbl, pack(VCE_TEMPLATE, NON_VAR, $term, 0,0,0));
 	foreach my $jcps (@$rEnt) {
 	    # weird things like VL, TL-contraction are not considered!
-	    my $curHST = '';
-	    foreach my $u (split /;/, $jcps) {
-		$curHST .= getHST($u, $vers);
-	    }
+	    my $curHST = join '', map getHST($_, $vers), split /;/, $jcps;
 	    if ($preHST && !$curHST || # hangul before non-hangul
 		$preHST =~ /L\z/ && $curHST =~ /^T/ ||
 		$preHST =~ /V\z/ && $curHST =~ /^L/ ||
 		$preHST =~ /T\z/ && $curHST =~ /^[LV]/) {
-
-		push @buf, $self->getWtHangulTerm();
+		push @buf, $termCE;
 	    }
 	    $preHST = $curHST;
-
 	    push @buf, $self->getWt($jcps);
 	}
-	$preHST # end at hangul
-	    and push @buf, $self->getWtHangulTerm();
-    }
-    else {
+	push @buf, $termCE if $preHST; # end at hangul
+    } else {
 	foreach my $jcps (@$rEnt) {
 	    push @buf, $self->getWt($jcps);
 	}
@@ -682,13 +685,6 @@ sub sort {
 	map { $_->[1] }
 	    sort{ $a->[0] cmp $b->[0] }
 		map [ $obj->getSortKey($_), $_ ], @_;
-}
-
-
-sub getWtHangulTerm {
-    my $self = shift;
-    return _varCE($self->{variable},
-	pack(VCE_TEMPLATE, NON_VAR, $self->{hangul_terminator}, 0,0,0));
 }
 
 
@@ -969,7 +965,7 @@ The C<new> method returns a collator object.
 
    $Collator = Unicode::Collate->new(
       UCA_Version => $UCA_Version,
-      alternate => $alternate, # deprecated: use of 'variable' is recommended.
+      alternate => $alternate, # alias for 'variable'
       backwards => $levelNumber, # or \@levelNumbers
       entry => $element,
       hangul_terminator => $term_primary_weight,
@@ -982,6 +978,7 @@ The C<new> method returns a collator object.
       overrideHangul => \&overrideHangul,
       preprocess => \&preprocess,
       rearrange => \@charList,
+      suppress => \@charList,
       table => $filename,
       undefName => qr/$undefName/,
       undefChar => qr/$undefChar/,
@@ -1203,7 +1200,7 @@ C<CJK Unified Ideographs Extension>.
     U+4E00..U+9FA5 if UCA_Version is 8 to 11;
     U+4E00..U+9FBB if UCA_Version is 14 to 16;
     U+4E00..U+9FC3 if UCA_Version is 18;
-    U+4E00..U+9FCB if UCA_Version> is 20.
+    U+4E00..U+9FCB if UCA_Version is 20.
 
     CJK Unified Ideographs Extension:
     Ext.A (U+3400..U+4DB5) and Ext.B (U+20000..U+2A6D6) if UCA_Version < 20;
@@ -1231,7 +1228,7 @@ ex. ignores all CJK Unified Ideographs.
 If C<undef> is passed explicitly as the value for this key,
 weights for CJK Unified Ideographs are treated as undefined.
 But assignment of weight for CJK Unified Ideographs
-in table or C<entry> is still valid.
+in <table> or C<entry> is still valid.
 
 =item overrideHangul
 
@@ -1251,7 +1248,7 @@ If C<undef> is passed explicitly as the value for this key,
 weight for Hangul Syllables is treated as undefined
 without decomposition into Hangul Jamo.
 But definition of weight for Hangul Syllables
-in table or C<entry> is still valid.
+in <table> or C<entry> is still valid.
 
 =item preprocess
 
@@ -1288,6 +1285,20 @@ If C<UCA_Version> is equal to or greater than 14, default is C<[]>
 
 B<According to the version 9 of UCA, this parameter shall not be used;
 but it is not warned at present.>
+
+=item suppress
+
+-- see suppress contractions in 5.14.11 Special-Purpose Commands,
+UTS #35 (LDML).
+
+Contractions begining with the specified characters are suppressed,
+even if those contractions are defined in <table> or C<entry>.
+
+An example for Russian and some languages using the Cyrillic script:
+
+    suppress => [0x0400..0x0417, 0x041A..0x0437, 0x043A..0x045F],
+
+where 0x0400 stands for C<U+0400>, CYRILLIC CAPITAL LETTER IE WITH GRAVE.
 
 =item table
 
@@ -1336,7 +1347,7 @@ specified as a comment (following C<#>) on each line.
 
 -- see 6.3.4 Reducing the Repertoire, UTS #10.
 
-Undefines the collation element as if it were unassigned in the table.
+Undefines the collation element as if it were unassigned in the <table>.
 This reduces the size of the table.
 If an unassigned character appears in the string to be collated,
 the sort key is made from its codepoint
@@ -1714,6 +1725,10 @@ L<http://www.unicode.org/Public/UNIDATA/HangulSyllableType.txt>
 =item Unicode Normalization Forms - UAX #15
 
 L<http://www.unicode.org/reports/tr15/>
+
+=item Unicode Locale Data Markup Language (LDML) - UTS #35
+
+L<http://www.unicode.org/reports/tr35/>
 
 =back
 
