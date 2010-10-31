@@ -4,6 +4,7 @@ Collate.pmX	# perl module for XSUB
 Collate.xsX	# extension for XSUB
 Collate/allkeys.txt
 Collate/keys.txt
+Collate/CJK/JISX0208.pm
 Collate/Locale.pm		Unicode::Collate::Locale
 Collate/Locale/af.pl		Unicode::Collate::Locale
 Collate/Locale/ar.pl		Unicode::Collate::Locale
@@ -28,6 +29,7 @@ Collate/Locale/hu.pl		Unicode::Collate::Locale
 Collate/Locale/hy.pl		Unicode::Collate::Locale
 Collate/Locale/ig.pl		Unicode::Collate::Locale
 Collate/Locale/is.pl		Unicode::Collate::Locale
+Collate/Locale/ja.pl		Unicode::Collate::Locale
 Collate/Locale/kk.pl		Unicode::Collate::Locale
 Collate/Locale/kl.pl		Unicode::Collate::Locale
 Collate/Locale/lt.pl		Unicode::Collate::Locale
@@ -76,6 +78,7 @@ data/hu.txt		# preparating Unicode::Collate::Locale
 data/hy.txt		# preparating Unicode::Collate::Locale
 data/ig.txt		# preparating Unicode::Collate::Locale
 data/is.txt		# preparating Unicode::Collate::Locale
+data/ja.txt		# preparating Unicode::Collate::Locale
 data/kk.txt		# preparating Unicode::Collate::Locale
 data/kl.txt		# preparating Unicode::Collate::Locale
 data/lt.txt		# preparating Unicode::Collate::Locale
@@ -103,6 +106,10 @@ data/wo.txt		# preparating Unicode::Collate::Locale
 data/yo.txt		# preparating Unicode::Collate::Locale
 disableXS	# perl script to disable XSUB
 enableXS	# perl script to enable XSUB
+gendata/dumpstr		# preparating Unicode::Collate::Locale
+gendata/gen-hu		# preparating Unicode::Collate::Locale
+gendata/gen-ja		# preparating Unicode::Collate::Locale
+gendata/gen-vi		# preparating Unicode::Collate::Locale
 Makefile.PL
 MANIFEST	MANIFEST for NoXSUB (pure perl)
 MANIFEST.X	# MANIFEST for XSUB
@@ -147,6 +154,9 @@ t/loc_hu.t	test Unicode::Collate::Locale
 t/loc_hy.t	test Unicode::Collate::Locale
 t/loc_ig.t	test Unicode::Collate::Locale
 t/loc_is.t	test Unicode::Collate::Locale
+t/loc_ja.t	test Unicode::Collate::Locale
+t/loc_jait.t	test Unicode::Collate::Locale
+t/loc_japr.t	test Unicode::Collate::Locale
 t/loc_kk.t	test Unicode::Collate::Locale
 t/loc_kl.t	test Unicode::Collate::Locale
 t/loc_lt.t	test Unicode::Collate::Locale
@@ -176,6 +186,8 @@ t/loc_vi.t	test Unicode::Collate::Locale
 t/loc_wo.t	test Unicode::Collate::Locale
 t/loc_yo.t	test Unicode::Collate::Locale
 t/normal.t	test using Unicode::Normalize
+t/overcjk0.t
+t/overcjk1.t
 t/override.t
 t/rearrang.t
 t/test.t

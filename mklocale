@@ -51,6 +51,10 @@
 #        will be converted to
 #    suppress => [0x0400..0x0417, 0x041A..0x0437, 0x043A..0x045F],
 #
+# use
+#
+# overrideCJK and overrideHangul
+#
 use 5.006;
 use strict;
 use warnings;
@@ -65,11 +69,17 @@ BEGIN {
 
 sub _getHexArray { map hex, $_[0] =~ /([0-9A-Fa-f]+)/g }
 sub trim { $_[0] =~ s/^\ +//; $_[0] =~ s/\ +\z// }
-sub ce { '[.'.join('.', map { sprintf '%04X', $_ } @_).']' }
+
+sub ce {
+    my $var = shift;
+    my $vc = $var ? '*' : '.';
+    my $hx = join '.', map { sprintf '%04X', $_ } @_;
+    return "[$vc$hx]";
+}
 
 our $PACKAGE = 'Unicode::Collate, locale';
 our $ENT_FMT = "%-9s ; %s # %s\n";
-our $RE_CE   = '(?:\[[0-9A-Fa-f\.]+\])';
+our $RE_CE   = '(?:\[[0-9A-Fa-f\.\*]+\])';
 
 my (%Keys, %Code, %Equiv, %Name, $vDUCET);
 my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
@@ -305,15 +315,24 @@ for my $txt (@txts) {
     open($fh, $txtfile) or croak "$PACKAGE: data/$txt is not found";
     open($ph, ">$plfile") or croak "$PACKAGE: locale/$pl can't be made";
 
-    print $ph "+{\n";
+    my $ptxt  = '';
     my $entry = '';
     while (<$fh>) {
+	chomp;
+	if (/^use/) {
+	    print $ph "$_;\n";
+	    next;
+	}
 	if (/^backwards$/) {
-	    print $ph "   backwards => 2,\n";
+	    $ptxt .= "   backwards => 2,\n";
+	    next;
+	}
+	if (s/^override(CJK|Hangul)[ \t]+//) {
+	    $ptxt .= "   override$1 => $_,\n";
 	    next;
 	}
 	if (/^upper$/) {
-	    print $ph "   upper_before_lower => 1,\n";
+	    $ptxt .= "   upper_before_lower => 1,\n";
 	    next;
 	}
 	if (s/^suppress//) {
@@ -323,12 +342,11 @@ for my $txt (@txts) {
 		s/-/../g;
 	    }
 	    my $list = join ", ", @c;
-	    print $ph "   suppress => [$list],\n";
+	    $ptxt .= "   suppress => [$list],\n";
 	    next;
 	}
-
 	if (/^\s*(#\s*)/) {
-	    print $ph $_ if $1 ne '#';
+	    $ptxt .= "$_\n" if $1 ne '#';
 	    next;
 	}
 
@@ -387,11 +405,12 @@ for my $txt (@txts) {
     }
     if ($entry) {
 	my $v = $vDUCET ? " # for DUCET v$vDUCET" : '';
-	print $ph "   entry => <<'ENTRY',$v\n";
-	print $ph $entry;
-	print $ph "ENTRY\n";
+	$ptxt .= "   entry => <<'ENTRY',$v\n";
+	$ptxt .= $entry;
+	$ptxt .= "ENTRY\n";
     }
-    print $ph "};\n";
+
+    print $ph "+{\n$ptxt};\n";
     close $fh;
     close $ph;
 }
@@ -412,7 +431,6 @@ sub parse_element {
 
 sub split_e_rule {
     my $line = shift;
-    chomp $line;
     my($e, $r) = split /;/, $line;
     return (parse_element($e), $r);
 }
@@ -434,10 +452,12 @@ sub parserule {
 
     for (my $prerule = $rule; $rule ne ''; $prerule = $rule) {
 	$rule =~ s/^ +//;
+	last if $rule =~ /^#/;
 	if ($rule =~ s/^($RE_CE)//o) {
 	    my $k = $1;
+	    my $var = $k =~ /^\[\*/ ? 1 : 0;
 	    my @c = _getHexArray($k);
-	    $result .= ce(@c);
+	    $result .= ce($var, @c);
 	    next;
 	}
 
@@ -451,13 +471,14 @@ sub parserule {
 
 	my @base;
 	for my $k ($key =~ /$RE_CE/go) {
-	    push @base, [_getHexArray($k)];
+	    my $var = $k =~ /^\[\*/ ? 1 : 0;
+	    push @base, [$var, _getHexArray($k)];
 	}
 	croak "the rule seems wrong at $prerule" if !@base;
 
 	my $replaced = 0;
 	while ($rule =~ s/^(([+-])\2*)(\d+)//) {
-	    my $idx = length($1) - 1;
+	    my $idx = length($1);
 	    my $num = $2 eq '-' ? -$3 : $3;
 	    $base[0][$idx] += $num;
 	    ++$replaced;
@@ -465,7 +486,7 @@ sub parserule {
 
 	$simple_decomp = 0 if $replaced;
 	for my $c (@base) {
-	    $c->[3] = hex $e if $replaced;
+	    $c->[4] = hex $e if $replaced;
 	    $result .= ce(@$c);
 	}
 	croak "something wrong at $rule" if $prerule eq $rule;

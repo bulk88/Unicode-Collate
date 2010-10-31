@@ -58,10 +58,10 @@ static const UV max_div_16 = UV_MAX / 16;
 #define CJK_UidF41	(0x9FBB)
 #define CJK_UidF51	(0x9FC3)
 #define CJK_UidF52	(0x9FCB)
-#define CJK_ExtAIni	(0x3400)
-#define CJK_ExtAFin	(0x4DB5)
-#define CJK_ExtBIni	(0x20000)
-#define CJK_ExtBFin	(0x2A6D6)
+#define CJK_ExtAIni	(0x3400)  /* Unicode 3.0.0 */
+#define CJK_ExtAFin	(0x4DB5)  /* Unicode 3.0.0 */
+#define CJK_ExtBIni	(0x20000) /* Unicode 3.1.0 */
+#define CJK_ExtBFin	(0x2A6D6) /* Unicode 3.1.0 */
 #define CJK_ExtCIni	(0x2A700) /* Unicode 5.2.0 */
 #define CJK_ExtCFin	(0x2B734) /* Unicode 5.2.0 */
 
@@ -329,10 +329,9 @@ _isUIdeo (code, uca_vers)
 		||
 	(CJK_ExtAIni <= code && code <= CJK_ExtAFin)
 		||
-	(CJK_ExtBIni <= code && code <= CJK_ExtBFin)
+	(uca_vers >=  9 && CJK_ExtBIni <= code && code <= CJK_ExtBFin)
 		||
-	(uca_vers >= 20 &&
-	 CJK_ExtCIni <= code && code <= CJK_ExtCFin)
+	(uca_vers >= 20 && CJK_ExtCIni <= code && code <= CJK_ExtCFin)
     );
 OUTPUT:
     RETVAL

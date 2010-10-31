@@ -1,0 +1,26 @@
+#!perl
+use strict;
+
+sub unidump { join(' ', map { sprintf '%04X', $_ } unpack 'U*', shift) }
+
+sub string {
+    my $s = shift;
+    my $ret = '"';
+    my @c = split //, $s;
+    for (@c) {
+	if (/^[\x20-\x7E]\z/) {
+	    $ret .= "\\" if !/^[0-9A-Za-z]\z/;
+	    $ret .= $_;
+	} elsif (/^[\x80-\xFF]\z/) {
+	    my $temp = @c == 1 ? "'U'" : "'U*'";
+	    my $hexa = join ', ', map sprintf("0x%X", $_), unpack('U*', $s);
+	    return "pack($temp, $hexa)";
+	} else {
+	    $ret .= sprintf '\x{%X}', unpack 'U', $_;
+	}
+    }
+    $ret .= '"';
+    return $ret;
+}
+
+1;
