@@ -24,6 +24,7 @@ open my $testf, ">t-vi.t" or die "t-vi.t";
 my $test0 = '';
 my $test1 = '';
 my $test2 = '';
+my $test3 = '';
 
 my %data;
 
@@ -31,14 +32,18 @@ for my $b (@base) {
     my $bc = pack 'U', hex $b;
     for my $t (@tone) {
 	my $tc = pack 'U', hex $t;
+	my $cat = $bc.$tc;
 	my $com = NFC($bc.$tc);
 	my $dec = NFD($bc).$tc;
 
+	my $scat = string($cat);
 	my $scom = string($com);
 	my $sdec = string($dec);
 	$test0 .= qq|ok(\$objVi->eq($sdec, $scom));\n|;
 
 	next if length $dec < 3;
+	$test3 .= qq|ok(\$objVi->eq($sdec, $scat));\n|;
+
 	my @d = split //, $dec;
 	my $rule = sprintf "<%s><%s>", unidump($bc), unidump($tc);
 
@@ -68,15 +73,13 @@ close $textf or die '$textf';
 my $count0 = $test0 =~ s/->eq/->eq/g;
 my $count1 = $test1 =~ s/->eq/->eq/g;
 my $count2 = $test2 =~ s/->eq/->eq/g;
+my $count3 = $test3 =~ s/->eq/->eq/g;
 
-my $test_count = 66;
+my $test_count = 74;
 print $testf "\n# $test_count\n\n";
 
 print $testf $test0;
 $test_count += $count0;
-print $testf "\n# $test_count\n\n";
-
-$test_count += 8;
 print $testf "\n# $test_count\n\n";
 
 print $testf $test1;
@@ -85,6 +88,10 @@ print $testf "\n# $test_count\n\n";
 
 print $testf $test2;
 $test_count += $count2;
+print $testf "\n# $test_count\n\n";
+
+print $testf $test3;
+$test_count += $count3;
 print $testf "\n# $test_count\n\n";
 
 close $testf or die '$testf';

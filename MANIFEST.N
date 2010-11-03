@@ -4,7 +4,11 @@ Collate.pmX	# perl module for XSUB
 Collate.xsX	# extension for XSUB
 Collate/allkeys.txt
 Collate/keys.txt
+Collate/CJK/Big5.pm
+Collate/CJK/GB2312.pm
 Collate/CJK/JISX0208.pm
+Collate/CJK/Pinyin.pm
+Collate/CJK/Stroke.pm
 Collate/Locale.pm		Unicode::Collate::Locale
 Collate/Locale/af.pl		Unicode::Collate::Locale
 Collate/Locale/ar.pl		Unicode::Collate::Locale
@@ -55,6 +59,11 @@ Collate/Locale/uk.pl		Unicode::Collate::Locale
 Collate/Locale/vi.pl		Unicode::Collate::Locale
 Collate/Locale/wo.pl		Unicode::Collate::Locale
 Collate/Locale/yo.pl		Unicode::Collate::Locale
+Collate/Locale/zh.pl		Unicode::Collate::Locale
+Collate/Locale/zh_big5.pl	Unicode::Collate::Locale
+Collate/Locale/zh_gb.pl		Unicode::Collate::Locale
+Collate/Locale/zh_pin.pl	Unicode::Collate::Locale
+Collate/Locale/zh_strk.pl	Unicode::Collate::Locale
 data/af.txt		# preparating Unicode::Collate::Locale
 data/ar.txt		# preparating Unicode::Collate::Locale
 data/az.txt		# preparating Unicode::Collate::Locale
@@ -104,12 +113,18 @@ data/uk.txt		# preparating Unicode::Collate::Locale
 data/vi.txt		# preparating Unicode::Collate::Locale
 data/wo.txt		# preparating Unicode::Collate::Locale
 data/yo.txt		# preparating Unicode::Collate::Locale
+data/zh.txt		# preparating Unicode::Collate::Locale
+data/zh_big5.txt	# preparating Unicode::Collate::Locale
+data/zh_gb.txt		# preparating Unicode::Collate::Locale
+data/zh_pin.txt		# preparating Unicode::Collate::Locale
+data/zh_strk.txt	# preparating Unicode::Collate::Locale
 disableXS	# perl script to disable XSUB
 enableXS	# perl script to enable XSUB
 gendata/dumpstr		# preparating Unicode::Collate::Locale
 gendata/gen-hu		# preparating Unicode::Collate::Locale
 gendata/gen-ja		# preparating Unicode::Collate::Locale
 gendata/gen-vi		# preparating Unicode::Collate::Locale
+gendata/gen-zh		# preparating Unicode::Collate::Locale
 Makefile.PL
 MANIFEST	MANIFEST for NoXSUB (pure perl)
 MANIFEST.X	# MANIFEST for XSUB
@@ -185,6 +200,11 @@ t/loc_uk.t	test Unicode::Collate::Locale
 t/loc_vi.t	test Unicode::Collate::Locale
 t/loc_wo.t	test Unicode::Collate::Locale
 t/loc_yo.t	test Unicode::Collate::Locale
+t/loc_zh.t	test Unicode::Collate::Locale
+t/loc_zhb5.t	test Unicode::Collate::Locale
+t/loc_zhgb.t	test Unicode::Collate::Locale
+t/loc_zhpy.t	test Unicode::Collate::Locale
+t/loc_zhst.t	test Unicode::Collate::Locale
 t/normal.t	test using Unicode::Normalize
 t/overcjk0.t
 t/overcjk1.t

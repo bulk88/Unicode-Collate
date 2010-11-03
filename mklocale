@@ -349,6 +349,7 @@ for my $txt (@txts) {
 	    $ptxt .= "$_\n" if $1 ne '#';
 	    next;
 	}
+	next if /^\s*\z/;
 
 	my($e,$rule) = split_e_rule($_);
 	my $name = getname($e);

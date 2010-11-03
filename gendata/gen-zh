@@ -1,0 +1,129 @@
+#!perl
+# gen-zh : auxiliary script for Chinese
+#
+# output files
+#
+#   t-zh.txt (the whole data/zh.txt)
+#   t-zh.t   (a main part of t/loc_zh.t)
+#
+use strict;
+use warnings;
+
+use Unicode::Normalize;
+require 'dumpstr';
+
+my @low = qw( 61 65 EA 69 6D 6E 6F 75 FC );
+my @upp = qw( 41 45 CA 49 4D 4E 4F 55 DC );
+my @tone = qw( 304 301 30C 300 0 );
+
+open my $textf, ">t-zh.txt" or die "t-zh.txt";
+my $text0 = '';
+
+open my $testf, ">t-zh.t" or die "t-zh.t";
+my $test0 = '';
+my $test1 = '';
+my $test2 = '';
+
+for my $i (0..@low-1) {
+    my $lb = pack('U', hex $low[$i]);
+    my $ub = pack('U', hex $upp[$i]);
+    for my $j (0..@tone-1) {
+	my $tc = $tone[$j] ? pack('U', hex $tone[$j]) : '';
+
+	my $ldec = NFD($lb).$tc;
+	my $udec = NFD($ub).$tc;
+
+	my $sldec = string($ldec);
+	my $sudec = string($udec);
+
+	if ($tc) { # has a tone
+	    my $nc = $tone[$j+1] ? pack('U', hex $tone[$j+1]) : '';
+	    my $snext = string(NFD($lb).$nc);
+	    $test0 .= qq|ok(\$objZh->eq($sldec, $snext));\n|;
+	}
+	if ($lb ne $ldec) { # has a tone, or the base is a composite
+	    $test1 .= qq|ok(\$objZh->eq($sldec, $sudec));\n|;
+	}
+
+	my $tx1 = '';
+	my $tx2 = '';
+	for my $bc ($lb, $ub) {
+	    my $dec = NFD($bc).$tc;
+	    my $com = NFC($bc.$tc);
+	    my $cat = $bc.$tc;
+
+	    my $sdec = string($dec);
+	    my $scom = string($com);
+	    my $scat = string($cat);
+
+	    if ($dec ne $com) {
+		$test2 .= qq|ok(\$objZh->eq($sdec, $scom));\n|;
+	    }
+	    if ($dec ne $cat && $cat ne $com) {
+		$test2 .= qq|ok(\$objZh->eq($sdec, $scat));\n|;
+	    }
+	    my $sacc = $sdec; # U+0340 and U+0341
+	    if ($sacc =~ s/(x\{?3)0([01])/${1}4${2}/) {
+		$test2 .= qq|ok(\$objZh->eq($sdec, $sacc));\n|;
+	    }
+
+	    # .txt
+	    my $c = element($com);
+	    my @d = split //, $dec;
+	    my $dif = $bc eq $d[0] ? "--".(4-$j) : "++".($j+1);
+
+	    if ($dif ne '--0') { # $com is not a simple base
+		my $e = $c;
+		$tx1 .= "$e;$d[0]$dif\n";
+		$tx1 .= "$e;$d[0]$dif\n" if $e =~ s/(\b03)0([01])/${1}4${2}/;
+	    }
+	    if ($dec ne $cat && $tc ne '') { # $cat is composite + tone
+		my $e = element($cat eq $com ? $dec : $cat);
+		$tx2 .= "$e;<$c>\n";
+		$tx2 .= "$e;<$c>\n" if $e =~ s/(\b03)0([01])/${1}4${2}/;
+	    }
+	}
+	$text0 .= "$tx1$tx2";
+    }
+}
+
+print $textf $text0;
+close $textf or die '$textf';
+
+#------
+
+my $count0 = $test0 =~ s/->eq/->eq/g;
+my $count1 = $test1 =~ s/->eq/->eq/g;
+my $count2 = $test2 =~ s/->eq/->eq/g;
+
+my $test_count = 2;
+print $testf "\n";
+print $testf "\$objZh->change(level => 1);\n\n";
+
+print $testf $test0;
+$test_count += $count0;
+print $testf "\n# $test_count\n\n";
+
+print $testf "\$objZh->change(level => 2);\n\n";
+
+$test0 =~ s/->eq/->lt/g;
+print $testf $test0;
+$test_count += $count0;
+print $testf "\n# $test_count\n\n";
+
+print $testf $test1;
+$test_count += $count1;
+print $testf "\n# $test_count\n\n";
+
+print $testf "\$objZh->change(level => 3);\n\n";
+
+$test1 =~ s/->eq/->lt/g;
+print $testf $test1;
+$test_count += $count1;
+print $testf "\n# $test_count\n\n";
+
+print $testf $test2;
+$test_count += $count2;
+print $testf "\n# $test_count\n\n";
+
+close $testf or die '$testf';

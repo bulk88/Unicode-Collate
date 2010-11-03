@@ -3,6 +3,18 @@ use strict;
 
 sub unidump { join(' ', map { sprintf '%04X', $_ } unpack 'U*', shift) }
 
+sub element {
+    my $s = shift;
+    my $u = unidump($s);
+    for ($u) {
+	s/\b00([46][1-9A-F]|[57][0-9A])\b/'{'.chr(hex $1).'}'/ge;
+	s/\ \{/{/g;
+	s/\}\ /}/g;
+	s/\}\{//g;
+    }
+    return $u;
+}
+
 sub string {
     my $s = shift;
     my $ret = '"';
