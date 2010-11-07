@@ -438,7 +438,7 @@ sub split_e_rule {
 
 sub getname {
     my $e = shift;
-    return $Name{$e} if $Name{$e};  # single codepoint without <>
+    return $Name{$e} if $Name{$e};  # single collation element (without <>)
     my @e = split ' ', $e;
     my @name = map { $Name{$_} ? $Name{$_} : 'unknown' } @e;
     return sprintf '<%s>', join ', ', @name;

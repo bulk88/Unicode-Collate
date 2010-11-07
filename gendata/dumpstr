@@ -1,5 +1,7 @@
 #!perl
 use strict;
+use warnings;
+no warnings 'utf8';
 
 sub unidump { join(' ', map { sprintf '%04X', $_ } unpack 'U*', shift) }
 
@@ -21,7 +23,7 @@ sub string {
     my @c = split //, $s;
     for (@c) {
 	if (/^[\x20-\x7E]\z/) {
-	    $ret .= "\\" if !/^[0-9A-Za-z]\z/;
+	    $ret .= "\\" if !/^[0-9A-Za-z_]\z/;
 	    $ret .= $_;
 	} elsif (/^[\x80-\xFF]\z/) {
 	    my $temp = @c == 1 ? "'U'" : "'U*'";

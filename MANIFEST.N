@@ -7,6 +7,7 @@ Collate/keys.txt
 Collate/CJK/Big5.pm
 Collate/CJK/GB2312.pm
 Collate/CJK/JISX0208.pm
+Collate/CJK/Korean.pm
 Collate/CJK/Pinyin.pm
 Collate/CJK/Stroke.pm
 Collate/Locale.pm		Unicode::Collate::Locale
@@ -36,6 +37,7 @@ Collate/Locale/is.pl		Unicode::Collate::Locale
 Collate/Locale/ja.pl		Unicode::Collate::Locale
 Collate/Locale/kk.pl		Unicode::Collate::Locale
 Collate/Locale/kl.pl		Unicode::Collate::Locale
+Collate/Locale/ko.pl		Unicode::Collate::Locale
 Collate/Locale/lt.pl		Unicode::Collate::Locale
 Collate/Locale/lv.pl		Unicode::Collate::Locale
 Collate/Locale/mt.pl		Unicode::Collate::Locale
@@ -90,6 +92,7 @@ data/is.txt		# preparating Unicode::Collate::Locale
 data/ja.txt		# preparating Unicode::Collate::Locale
 data/kk.txt		# preparating Unicode::Collate::Locale
 data/kl.txt		# preparating Unicode::Collate::Locale
+data/ko.txt		# preparating Unicode::Collate::Locale
 data/lt.txt		# preparating Unicode::Collate::Locale
 data/lv.txt		# preparating Unicode::Collate::Locale
 data/mt.txt		# preparating Unicode::Collate::Locale
@@ -134,6 +137,7 @@ mklocale	# preparating Unicode::Collate::Locale
 README		# README
 t/altern.t
 t/cjkrange.t
+t/compatui.t
 t/contract.t
 t/default.t	test using DUCET
 t/hangtype.t
@@ -174,6 +178,7 @@ t/loc_jait.t	test Unicode::Collate::Locale
 t/loc_japr.t	test Unicode::Collate::Locale
 t/loc_kk.t	test Unicode::Collate::Locale
 t/loc_kl.t	test Unicode::Collate::Locale
+t/loc_ko.t	test Unicode::Collate::Locale
 t/loc_lt.t	test Unicode::Collate::Locale
 t/loc_lv.t	test Unicode::Collate::Locale
 t/loc_mk.t	test Unicode::Collate::Locale

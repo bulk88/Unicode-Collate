@@ -65,6 +65,10 @@ static const UV max_div_16 = UV_MAX / 16;
 #define CJK_ExtCIni	(0x2A700) /* Unicode 5.2.0 */
 #define CJK_ExtCFin	(0x2B734) /* Unicode 5.2.0 */
 
+static STDCHAR UnifiedCompat[] = {
+      1,1,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,1,0,0,1,1,1
+}; /* E F 0 1 2 3 4 5 6 7 8 9 A B C D E F 0 1 2 3 4 5 6 7 8 9 */
+
 MODULE = Unicode::Collate	PACKAGE = Unicode::Collate
 
 PROTOTYPES: DISABLE
@@ -259,11 +263,18 @@ _derivCE_9 (code)
     UV base, aaaa, bbbb;
     U8 a[VCE_Length + 1] = "\x00\xFF\xFF\x00\x20\x00\x02\xFF\xFF";
     U8 b[VCE_Length + 1] = "\x00\xFF\xFF\x00\x00\x00\x00\xFF\xFF";
+    bool basic_unified = 0;
   PPCODE:
-    base = (CJK_UidIni <= code && (ix >= 3 ? (code <= CJK_UidF52) :
-				   ix == 2 ? (code <= CJK_UidF51) :
-				   ix == 1 ? (code <= CJK_UidF41) :
-					     (code <= CJK_UidFin)))
+    if (CJK_UidIni <= code) {
+	if (0xFA0E <= code && code <= 0xFA29)
+	    basic_unified = (bool)UnifiedCompat[code - 0xFA0E];
+	else
+	    basic_unified = (ix >= 3 ? (code <= CJK_UidF52) :
+			     ix == 2 ? (code <= CJK_UidF51) :
+			     ix == 1 ? (code <= CJK_UidF41) :
+				       (code <= CJK_UidFin));
+    }
+    base = (basic_unified)
 	    ? 0xFB40 : /* CJK */
 	   (CJK_ExtAIni <= code && code <= CJK_ExtAFin ||
 	    CJK_ExtBIni <= code && code <= CJK_ExtBFin ||
@@ -318,18 +329,24 @@ SV*
 _isUIdeo (code, uca_vers)
     UV code;
     IV uca_vers;
+    bool basic_unified = 0;
   CODE:
+    /* uca_vers = 0 for _uideoCE_8() */
+    if (CJK_UidIni <= code) {
+	if (0xFA0E <= code && code <= 0xFA29)
+	    basic_unified = (bool)UnifiedCompat[code - 0xFA0E];
+	else
+	    basic_unified = (uca_vers >= 20 ? (code <= CJK_UidF52) :
+			     uca_vers >= 18 ? (code <= CJK_UidF51) :
+			     uca_vers >= 14 ? (code <= CJK_UidF41) :
+					      (code <= CJK_UidFin));
+    }
     RETVAL = boolSV(
-	(CJK_UidIni <= code && (
-	    uca_vers >= 20 ? (code <= CJK_UidF52) :
-	    uca_vers >= 18 ? (code <= CJK_UidF51) :
-	    uca_vers >= 14 ? (code <= CJK_UidF41) :
-			     (code <= CJK_UidFin)
-	))
+	(basic_unified)
 		||
 	(CJK_ExtAIni <= code && code <= CJK_ExtAFin)
 		||
-	(uca_vers >=  9 && CJK_ExtBIni <= code && code <= CJK_ExtBFin)
+	(uca_vers >=  8 && CJK_ExtBIni <= code && code <= CJK_ExtBFin)
 		||
 	(uca_vers >= 20 && CJK_ExtCIni <= code && code <= CJK_ExtCFin)
     );

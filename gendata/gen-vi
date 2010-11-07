@@ -51,7 +51,7 @@ for my $b (@base) {
 	if ($com eq NFC $rv2) {
 	    my $srv2 = string($rv2);
 	    $test1 .= qq|ok(\$objVi->eq($sdec, $srv2));\n|;
-	    my $d = unidump($rv2);
+	    my $d = element($rv2);
 	    $text1 .= "$d;$rule\n" unless $data{$d}++;
 	}
 
@@ -59,7 +59,7 @@ for my $b (@base) {
 	if ($com eq NFC $rev) {
 	    my $srev = string($rev);
 	    $test2 .= qq|ok(\$objVi->eq($sdec, $srev));\n|;
-	    my $d = unidump($rev);
+	    my $d = element($rev);
 	    $text2 .= "$d;$rule\n" unless $data{$d}++;
 	}
     }
