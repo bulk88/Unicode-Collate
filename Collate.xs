@@ -28,42 +28,44 @@ static const UV max_div_16 = UV_MAX / 16;
 
 #define VCE_Length	(9)
 
-#define Hangul_SBase	(0xAC00)
-#define Hangul_SIni	(0xAC00)
-#define Hangul_SFin	(0xD7A3)
-#define Hangul_NCount	(588)
-#define Hangul_TCount	(28)
-#define Hangul_LBase	(0x1100)
-#define Hangul_LIni	(0x1100)
-#define Hangul_LFin	(0x1159)
-#define Hangul_LFill	(0x115F)
-#define Hangul_LEnd	(0x115F) /* Unicode 5.2.0 */
-#define Hangul_VBase	(0x1161)
-#define Hangul_VIni	(0x1160)
-#define Hangul_VFin	(0x11A2)
-#define Hangul_VEnd	(0x11A7) /* Unicode 5.2.0 */
-#define Hangul_TBase	(0x11A7)
-#define Hangul_TIni	(0x11A8)
-#define Hangul_TFin	(0x11F9)
-#define Hangul_TEnd	(0x11FF) /* Unicode 5.2.0 */
-#define HangulL2Ini	(0xA960) /* Unicode 5.2.0 */
-#define HangulL2Fin	(0xA97C) /* Unicode 5.2.0 */
-#define HangulV2Ini	(0xD7B0) /* Unicode 5.2.0 */
-#define HangulV2Fin	(0xD7C6) /* Unicode 5.2.0 */
-#define HangulT2Ini	(0xD7CB) /* Unicode 5.2.0 */
-#define HangulT2Fin	(0xD7FB) /* Unicode 5.2.0 */
+#define Hangul_SBase  (0xAC00)
+#define Hangul_SIni   (0xAC00)
+#define Hangul_SFin   (0xD7A3)
+#define Hangul_NCount (588)
+#define Hangul_TCount (28)
+#define Hangul_LBase  (0x1100)
+#define Hangul_LIni   (0x1100)
+#define Hangul_LFin   (0x1159)
+#define Hangul_LFill  (0x115F)
+#define Hangul_LEnd   (0x115F) /* Unicode 5.2 */
+#define Hangul_VBase  (0x1161)
+#define Hangul_VIni   (0x1160) /* from Vowel Filler */
+#define Hangul_VFin   (0x11A2)
+#define Hangul_VEnd   (0x11A7) /* Unicode 5.2 */
+#define Hangul_TBase  (0x11A7) /* from "no-final" codepoint */
+#define Hangul_TIni   (0x11A8)
+#define Hangul_TFin   (0x11F9)
+#define Hangul_TEnd   (0x11FF) /* Unicode 5.2 */
+#define HangulL2Ini   (0xA960) /* Unicode 5.2 */
+#define HangulL2Fin   (0xA97C) /* Unicode 5.2 */
+#define HangulV2Ini   (0xD7B0) /* Unicode 5.2 */
+#define HangulV2Fin   (0xD7C6) /* Unicode 5.2 */
+#define HangulT2Ini   (0xD7CB) /* Unicode 5.2 */
+#define HangulT2Fin   (0xD7FB) /* Unicode 5.2 */
 
-#define CJK_UidIni	(0x4E00)
-#define CJK_UidFin	(0x9FA5)
-#define CJK_UidF41	(0x9FBB)
-#define CJK_UidF51	(0x9FC3)
-#define CJK_UidF52	(0x9FCB)
-#define CJK_ExtAIni	(0x3400)  /* Unicode 3.0.0 */
-#define CJK_ExtAFin	(0x4DB5)  /* Unicode 3.0.0 */
-#define CJK_ExtBIni	(0x20000) /* Unicode 3.1.0 */
-#define CJK_ExtBFin	(0x2A6D6) /* Unicode 3.1.0 */
-#define CJK_ExtCIni	(0x2A700) /* Unicode 5.2.0 */
-#define CJK_ExtCFin	(0x2B734) /* Unicode 5.2.0 */
+#define CJK_UidIni    (0x4E00)
+#define CJK_UidFin    (0x9FA5)
+#define CJK_UidF41    (0x9FBB)
+#define CJK_UidF51    (0x9FC3)
+#define CJK_UidF52    (0x9FCB)
+#define CJK_ExtAIni   (0x3400) /* Unicode 3.0 */
+#define CJK_ExtAFin   (0x4DB5) /* Unicode 3.0 */
+#define CJK_ExtBIni  (0x20000) /* Unicode 3.1 */
+#define CJK_ExtBFin  (0x2A6D6) /* Unicode 3.1 */
+#define CJK_ExtCIni  (0x2A700) /* Unicode 5.2 */
+#define CJK_ExtCFin  (0x2B734) /* Unicode 5.2 */
+#define CJK_ExtDIni  (0x2B740) /* Unicode 6.0 */
+#define CJK_ExtDFin  (0x2B81D) /* Unicode 6.0 */
 
 static STDCHAR UnifiedCompat[] = {
       1,1,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,1,0,0,1,1,1
@@ -180,7 +182,22 @@ _isIllegal (sv)
     uv = SvUVX(sv);
     RETVAL = boolSV(
 	   0x10FFFF < uv		   /* out of range */
-	|| ((uv & 0xFFFE) == 0xFFFE)       /* ??FFF[EF] (cf. utf8.c) */
+    );
+OUTPUT:
+    RETVAL
+
+
+SV*
+_isNonchar (sv)
+    SV* sv
+  PREINIT:
+    UV uv;
+  CODE:
+    if (!sv || !SvIOK(sv))
+	XSRETURN_NO;
+    uv = SvUVX(sv);
+    RETVAL = boolSV(
+	   ((uv & 0xFFFE) == 0xFFFE)       /* ??FFF[EF] (cf. utf8.c) */
 	|| (0xD800 <= uv && uv <= 0xDFFF)  /* unpaired surrogates */
 	|| (0xFDD0 <= uv && uv <= 0xFDEF)  /* other non-characters */
     );
@@ -259,6 +276,7 @@ _derivCE_9 (code)
     _derivCE_14 = 1
     _derivCE_18 = 2
     _derivCE_20 = 3
+    _derivCE_22 = 4
   PREINIT:
     UV base, aaaa, bbbb;
     U8 a[VCE_Length + 1] = "\x00\xFF\xFF\x00\x20\x00\x02\xFF\xFF";
@@ -279,7 +297,9 @@ _derivCE_9 (code)
 	   (CJK_ExtAIni <= code && code <= CJK_ExtAFin ||
 	    CJK_ExtBIni <= code && code <= CJK_ExtBFin ||
 	    ix >= 3 &&
-	    CJK_ExtCIni <= code && code <= CJK_ExtCFin)
+	    CJK_ExtCIni <= code && code <= CJK_ExtCFin ||
+	    ix >= 4 &&
+	    CJK_ExtDIni <= code && code <= CJK_ExtDFin)
 	    ? 0xFB80   /* CJK ext. */
 	    : 0xFBC0;  /* others */
     aaaa =  base + (code >> 15);
@@ -349,6 +369,8 @@ _isUIdeo (code, uca_vers)
 	(uca_vers >=  8 && CJK_ExtBIni <= code && code <= CJK_ExtBFin)
 		||
 	(uca_vers >= 20 && CJK_ExtCIni <= code && code <= CJK_ExtCFin)
+		||
+	(uca_vers >= 22 && CJK_ExtDIni <= code && code <= CJK_ExtDFin)
     );
 OUTPUT:
     RETVAL

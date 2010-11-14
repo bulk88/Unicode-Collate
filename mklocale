@@ -1,6 +1,6 @@
 #!perl
 #
-# This auxiliary script makes locale .pl files
+# This auxiliary script makes locale .pl files and copes with Korean.pm
 # used by Unicode::Collate::Locale.
 #
 # Usage:
@@ -8,13 +8,14 @@
 #
 # Input files:
 #    data/*.txt
+#    Collate/CJK/Korean.pm
 #    Collate/allkeys.txt
 #
 # Output files:
-#    Locale/*.pl
-#   (need to be moved to Collate/Locale/*.pl to install them)
+#    Locale/*.pl (need to be moved to Collate/Locale/*.pl to install them)
+#    Korean.pm   (need to be moved to Collate/CJK/Korean.pm to install it)
 #
-# == Examples of the Rules ==
+# == Examples of the Rules for data/*.txt ==
 #
 # 00F1;n+1 ===> primary weight of 00F1 is greater than that of n by 1.
 #    Among literals, only [A-Za-z] can be the base.
@@ -81,7 +82,32 @@ our $PACKAGE = 'Unicode::Collate, locale';
 our $ENT_FMT = "%-9s ; %s # %s\n";
 our $RE_CE   = '(?:\[[0-9A-Fa-f\.\*]+\])';
 
-my (%Keys, %Code, %Equiv, %Name, $vDUCET);
+
+use constant SBase  => 0xAC00;
+use constant SFinal => 0xD7A3;
+use constant NCount =>    588;
+use constant TCount =>     28;
+use constant LBase  => 0x1100;
+use constant VBase  => 0x1161;
+use constant TBase  => 0x11A7;
+
+sub decHangul {
+    my $code = shift;
+    my $si = $code - SBase;
+    my $li = int( $si / NCount);
+    my $vi = int(($si % NCount) / TCount);
+    my $ti =      $si % TCount;
+    return (
+	LBase + $li,
+	VBase + $vi,
+	$ti ? (TBase + $ti) : (),
+    );
+}
+
+
+my (%Keys, %Code, %Equiv, %Name, $vDUCET, %JamoWt1);
+my $JamoWt2 = 0;
+
 my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 =00C2= (a-circ)
 1EA7;<00E2><0300>
@@ -263,6 +289,8 @@ for my $o (@OtherEquiv) {
     $OtherEquiv{$uv} = \@ln;
 }
 
+##### read DUCET #####
+
 {
     my($f, $fh);
     foreach my $d ('.') {
@@ -297,8 +325,84 @@ for my $o (@OtherEquiv) {
 	$Keys{$e} = $k;
 	$Code{$k} = $e;
 	$Name{$e} = $name;
+
+	if ($e =~ /^11[0-9A-F]{2}\z/) { # Hangul Jamo (modern only)
+	    my @ec = _getHexArray($e);
+	    my @kc = _getHexArray($k);
+	    if (@ec == 1) {
+		$JamoWt1{$ec[0]} = $kc[0]; # each jamo
+		$JamoWt2 = $kc[1] if $JamoWt2 < $kc[1]; # max
+	    }
+	}
     }
+    close $fh;
 }
+
+##### Korean.pm #####
+
+{
+    my($f, $fh);
+    foreach my $d ('.') {
+	$f = File::Spec->catfile($d, "Collate", "CJK", "Korean.pm");
+	last if open($fh, $f);
+	$f = undef;
+    }
+    croak "$PACKAGE: Collate/CJK/Korean.pm is not found" if !defined $f;
+
+    my %KO_jamo;
+    my $KO_head = '';
+    my $KO_foot = '';
+    my $KO_state = 0;
+    my $KO_data  = 0;
+    while (my $line = <$fh>) {
+	chomp $line;
+	if ($KO_state == 0) {
+	    $KO_head .= "$line\n";
+	}
+	if ($KO_state == 2) {
+	    $KO_foot .= "$line\n";
+	}
+	$KO_state = 1 if $line =~ /^my %jamo2prim/;
+	$KO_state = 2 if $line =~ /^\); # for DUCET/;
+
+	$KO_data = 1 if $line =~ /^__DATA__/;
+	$KO_data = 0 if $line =~ /^__END__/;
+
+	if ($KO_data) {
+	    next if $line !~ /^[A-D]/;
+	    my @u = _getHexArray($line);
+	    croak "unexpected $line" if @u != 1;
+	    my $uv = $u[0];
+	    croak "unexpected $line" unless SBase <= $uv && $uv <= SFinal;
+	    $KO_jamo{$_} = 1 for decHangul($uv);
+	}
+    }
+    close $fh;
+
+    open my $pm, ">Korean.pm" or die 'Korean.pm';
+    print $pm $KO_head;
+
+    my $count = 0;
+    for (sort keys %KO_jamo) {
+	print $pm ' ' if ($count % 4) == 0;
+	++$count;
+	print $pm '   ';
+	print $pm sprintf '0x%04X, 0x%04X,', $_, $JamoWt1{$_};
+	print $pm "\n" if ($count % 4) == 0;
+    }
+    print $pm "\n" if $count % 4 != 0;
+
+    my $v = $vDUCET ? " # for DUCET v$vDUCET" : '';
+    print $pm ");$v\n";
+
+    $JamoWt2 = sprintf "0x%02X", $JamoWt2;
+    $KO_foot =~ s/(\$wt = )[0-9x]+/$1$JamoWt2/;
+    print $pm $KO_foot;
+    close $pm;
+}
+
+##### Locale/*.pl #####
+
 opendir DIR, "data" or croak "no data";
 my @txts = grep !/^\./, readdir DIR;
 closedir DIR;

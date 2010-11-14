@@ -210,6 +210,7 @@ t/loc_zhb5.t	test Unicode::Collate::Locale
 t/loc_zhgb.t	test Unicode::Collate::Locale
 t/loc_zhpy.t	test Unicode::Collate::Locale
 t/loc_zhst.t	test Unicode::Collate::Locale
+t/nonchar.t
 t/normal.t	test using Unicode::Normalize
 t/overcjk0.t
 t/overcjk1.t

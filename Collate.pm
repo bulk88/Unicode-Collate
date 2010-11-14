@@ -14,7 +14,7 @@ use File::Spec;
 
 no warnings 'utf8';
 
-our $VERSION = '0.66';
+our $VERSION = '0.67';
 our $PACKAGE = __PACKAGE__;
 
 require DynaLoader;
@@ -106,7 +106,7 @@ our @ChangeOK = qw/
   /;
 
 our @ChangeNG = qw/
-    entry mapping table maxlength
+    entry mapping table maxlength contraction
     ignoreChar ignoreName undefChar undefName variableTable
     versionTable alternateTable backwardsTable forwardsTable rearrangeTable
     derivCode normCode rearrangeHash backwardsFlag
@@ -171,6 +171,7 @@ my %DerivCode = (
    16 => \&_derivCE_14, # 16 == 14
    18 => \&_derivCE_18,
    20 => \&_derivCE_20,
+   22 => \&_derivCE_22,
 );
 
 sub checkCollator {
@@ -410,8 +411,16 @@ sub parseEntry
     $self->{mapping}{$entry} = $is_L3_ignorable ? [] : \@key;
 
     if (@uv > 1) {
-	(!$self->{maxlength}{$uv[0]} || $self->{maxlength}{$uv[0]} < @uv)
-	    and $self->{maxlength}{$uv[0]} = @uv;
+	if (!$self->{maxlength}{$uv[0]} || $self->{maxlength}{$uv[0]} < @uv) {
+	    $self->{maxlength}{$uv[0]} = @uv;
+	}
+    }
+    if (@uv > 2) {
+	while (@uv) {
+	    pop @uv;
+	    my $fake_entry = join(CODE_SEP, @uv); # in JCPS
+	    $self->{contraction}{$fake_entry} = 1;
+	}
     }
 }
 
@@ -437,7 +446,8 @@ sub splitEnt
     my $map  = $self->{mapping};
     my $max  = $self->{maxlength};
     my $reH  = $self->{rearrangeHash};
-    my $ver9 = $self->{UCA_Version} >= 9 && $self->{UCA_Version} <= 11;
+    my $vers = $self->{UCA_Version};
+    my $ver9 = $vers >= 9 && $vers <= 11;
     my $uXS  = $self->{__useXS};
 
     my ($str, @buf);
@@ -472,7 +482,7 @@ sub splitEnt
 
     # remove a code point marked as a completely ignorable.
     for (my $i = 0; $i < @src; $i++) {
-	if (_isIllegal($src[$i])) {
+	if (_isIllegal($src[$i]) || $vers <= 20 && _isNonchar($src[$i])) {
 	    $src[$i] = undef;
 	} elsif ($ver9) {
 	    $src[$i] = undef if $map->{ $src[$i] } &&
@@ -512,30 +522,48 @@ sub splitEnt
 		}
 	    }
 
-	# not-contiguous contraction with Combining Char (cf. UTS#10, S2.1).
+	# discontiguous contraction with Combining Char (cf. UTS#10, S2.1).
 	# This process requires Unicode::Normalize.
 	# If "normalization" is undef, here should be skipped *always*
 	# (in spite of bool value of $CVgetCombinClass),
 	# since canonical ordering cannot be expected.
 	# Blocked combining character should not be contracted.
 
-	    if ($self->{normalization})
 	    # $self->{normCode} is false in the case of "prenormalized".
-	    {
+	    if ($self->{normalization}) {
+		my $cont = $self->{contraction};
 		my $preCC = 0;
-		my $curCC = 0;
+		my $preCC_uc = 0;
+		my $jcps_uc = $jcps;
+		my(@out, @out_uc);
 
 		for (my $p = $i + 1; $p < @src; $p++) {
 		    next if ! defined $src[$p];
-		    $curCC = $CVgetCombinClass->($src[$p]);
+		    my $curCC = $CVgetCombinClass->($src[$p]);
 		    last unless $curCC;
 		    my $tail = CODE_SEP . $src[$p];
+
+		    if ($preCC_uc != $curCC && ($map->{$jcps_uc.$tail} ||
+					       $cont->{$jcps_uc.$tail})) {
+			$jcps_uc .= $tail;
+			push @out_uc, $p;
+		    } else {
+			$preCC_uc = $curCC;
+		    }
+
 		    if ($preCC != $curCC && $map->{$jcps.$tail}) {
 			$jcps .= $tail;
-			$src[$p] = undef;
+			push @out, $p;
 		    } else {
 			$preCC = $curCC;
 		    }
+		}
+
+		if ($map->{$jcps_uc}) {
+		    $jcps = $jcps_uc;
+		    $src[$_] = undef for @out_uc;
+		} else {
+		    $src[$_] = undef for @out;
 		}
 	    }
 	}
@@ -1013,12 +1041,11 @@ with no parameters, the collator should do the default collation.
 If the tracking version number of UCA is given,
 behavior of that tracking version is emulated on collating.
 If omitted, the return value of C<UCA_Version()> is used.
-C<UCA_Version()> should return the latest tracking version supported.
 
-The supported tracking version: 8, 9, 11, 14, 16, 18 or 20.
+The following tracking versions are supported.  The default is 20.
 
      UCA       Unicode Standard         DUCET (@version)
-     ---------------------------------------------------
+   -------------------------------------------------------
       8              3.1                3.0.1 (3.0.1d9)
       9     3.1 with Corrigendum 3      3.1.1 (3.1.1)
      11              4.0                4.0.0 (4.0.0)
@@ -1026,8 +1053,24 @@ The supported tracking version: 8, 9, 11, 14, 16, 18 or 20.
      16              5.0                5.0.0 (5.0.0)
      18             5.1.0               5.1.0 (5.1.0)
      20             5.2.0               5.2.0 (5.2.0)
+     22             6.0.0               6.0.0 (6.0.0)
 
 Note: Recent UTS #10 renames "Tracking Version" to "Revision."
+
+* Noncharacters (e.g. U+FFFF) are not ignored, and can be overrided
+since C<UCA_Version> 22.
+
+* Fully ignorable characters were ignored, and would not interrupt
+contractions with C<UCA_Version> 9 and 11.
+
+* Treatment of ignorables after variables and some behaviors
+were changed at C<UCA_Version> 9.
+
+* Characters regarded as CJK unified ideographs (cf. C<overrideCJK>)
+depend on C<UCA_Version>.
+
+* Many hangul jamo are assigned at C<UCA_Version> 20, that will affect
+C<hangul_terminator>.
 
 =item alternate
 
@@ -1198,7 +1241,7 @@ B<is not> equivalent to C<(normalization =E<gt> 'NFD')>.
 
 In the case of C<(normalization =E<gt> "prenormalized")>,
 any normalization is not performed, but
-non-contiguous contractions with combining characters are performed.
+discontiguous contractions with combining characters are performed.
 Therefore
 C<(normalization =E<gt> 'prenormalized', preprocess =E<gt> sub { NFD(shift) })>
 B<is> equivalent to C<(normalization =E<gt> 'NFD')>.
@@ -1216,15 +1259,16 @@ By default, CJK unified ideographs are ordered in Unicode codepoint
 order, but those in the CJK Unified Ideographs block are lesser than
 those in the CJK Unified Ideographs Extension A etc.
 
-    In CJK Unified Ideographs block:
-    U+4E00..U+9FA5 if UCA_Version is 8 to 11;
-    U+4E00..U+9FBB if UCA_Version is 14 to 16;
-    U+4E00..U+9FC3 if UCA_Version is 18;
-    U+4E00..U+9FCB if UCA_Version is 20.
+    In the CJK Unified Ideographs block:
+    U+4E00..U+9FA5 if UCA_Version is 8 to 11.
+    U+4E00..U+9FBB if UCA_Version is 14 to 16.
+    U+4E00..U+9FC3 if UCA_Version is 18.
+    U+4E00..U+9FCB if UCA_Version is 20 or greater.
 
-    In CJK Unified Ideographs Extension blocks:
-    Ext.A (U+3400..U+4DB5) and Ext.B (U+20000..U+2A6D6) in any UCA_Version;
-    Ext.C (U+2A700..U+2B734) if UCA_Version is 20.
+    In the CJK Unified Ideographs Extension blocks:
+    Ext.A (U+3400..U+4DB5) and Ext.B (U+20000..U+2A6D6) in any UCA_Version.
+    Ext.C (U+2A700..U+2B734) if UCA_Version is 20 or greater.
+    Ext.D (U+2B740..U+2B81D) if UCA_Version is 22 or greater.
 
 Through C<overrideCJK>, ordering of CJK unified ideographs (including
 extensions) can be overrided.
@@ -1683,6 +1727,8 @@ returns C<"unknown">.
 =item C<UCA_Version()>
 
 Returns the tracking version number of UTS #10 this module consults.
+C<UCA_Version()> should return the tracking version corresponding
+with the DUCET incorporated.
 
 =item C<Base_Unicode_Version()>
 
