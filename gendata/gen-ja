@@ -73,7 +73,7 @@ my $count1 = $test1 =~ s/->eq/->eq/g;
 my $count2 = $test2 =~ s/->eq/->eq/g;
 my $count3 = $test3 =~ s/->eq/->eq/g;
 
-my $test_count = 17;
+my $test_count = 32;
 print $testf "\n# $test_count\n\n";
 
 print $testf "\$objJa->change(level => 3);\n\n";

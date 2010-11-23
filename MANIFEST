@@ -136,6 +136,13 @@ mkheader	perl script to make C header files for XSUB
 mklocale	# preparating Unicode::Collate::Locale
 README		# README
 t/altern.t
+t/backwds.t
+t/cjk_b5.t	test Unicode::Collate::CJK::Big5
+t/cjk_gb.t	test Unicode::Collate::CJK::GB2312
+t/cjk_ja.t	test Unicode::Collate::CJK::JISX0208
+t/cjk_ko.t	test Unicode::Collate::CJK::Korean using DUCET
+t/cjk_py.t	test Unicode::Collate::CJK::Pinyin
+t/cjk_st.t	test Unicode::Collate::CJK::Stroke
 t/cjkrange.t
 t/compatui.t
 t/contract.t
