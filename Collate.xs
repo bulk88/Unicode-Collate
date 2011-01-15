@@ -10,6 +10,25 @@
 #define utf8n_to_uvuni  utf8_to_uv
 #endif /* utf8n_to_uvuni */
 
+/* UTF8_ALLOW_BOM is used before Perl 5.8.0 */
+#ifndef UTF8_ALLOW_BOM
+#define UTF8_ALLOW_BOM  (0)
+#endif /* UTF8_ALLOW_BOM */
+
+#ifndef UTF8_ALLOW_SURROGATE
+#define UTF8_ALLOW_SURROGATE  (0)
+#endif /* UTF8_ALLOW_SURROGATE */
+
+#ifndef UTF8_ALLOW_FE_FF
+#define UTF8_ALLOW_FE_FF  (0)
+#endif /* UTF8_ALLOW_FE_FF */
+
+#ifndef UTF8_ALLOW_FFFF
+#define UTF8_ALLOW_FFFF  (0)
+#endif /* UTF8_ALLOW_FFFF */
+
+#define AllowAnyUTF (UTF8_ALLOW_SURROGATE|UTF8_ALLOW_BOM|UTF8_ALLOW_FE_FF|UTF8_ALLOW_FFFF)
+
 /* if utf8n_to_uvuni() sets retlen to 0 (?) */
 #define ErrRetlenIsZero "panic (Unicode::Collate): zero-length character"
 
@@ -70,6 +89,8 @@ static const UV max_div_16 = UV_MAX / 16;
 static STDCHAR UnifiedCompat[] = {
       1,1,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,1,0,0,1,1,1
 }; /* E F 0 1 2 3 4 5 6 7 8 9 A B C D E F 0 1 2 3 4 5 6 7 8 9 */
+
+#define codeRange(bcode, ecode)	((bcode) <= code && code <= (ecode))
 
 MODULE = Unicode::Collate	PACKAGE = Unicode::Collate
 
@@ -193,8 +214,7 @@ _isNonchar (sv)
   PREINIT:
     UV uv;
   CODE:
-    if (!sv || !SvIOK(sv))
-	XSRETURN_NO;
+    /* should be called only if ! _isIllegal(sv). */
     uv = SvUVX(sv);
     RETVAL = boolSV(
 	   ((uv & 0xFFFE) == 0xFFFE)       /* ??FFF[EF] (cf. utf8.c) */
@@ -232,32 +252,31 @@ getHST (code, uca_vers = 0)
     char * hangtype;
     STRLEN typelen;
   CODE:
-    if (Hangul_SIni <= code && code <= Hangul_SFin) {
+    if (codeRange(Hangul_SIni, Hangul_SFin)) {
 	if ((code - Hangul_SBase) % Hangul_TCount) {
 	    hangtype = "LVT"; typelen = 3;
 	} else {
 	    hangtype = "LV"; typelen = 2;
 	}
     } else if (uca_vers < 20) {
-	if (Hangul_LIni <= code && code <= Hangul_LFin ||
-				   code == Hangul_LFill) {
+	if (codeRange(Hangul_LIni, Hangul_LFin) || code == Hangul_LFill) {
 	    hangtype = "L"; typelen = 1;
-	} else if (Hangul_VIni <= code && code <= Hangul_VFin) {
+	} else if (codeRange(Hangul_VIni, Hangul_VFin)) {
 	    hangtype = "V"; typelen = 1;
-	} else if (Hangul_TIni <= code && code <= Hangul_TFin) {
+	} else if (codeRange(Hangul_TIni, Hangul_TFin)) {
 	    hangtype = "T"; typelen = 1;
 	} else {
 	    hangtype = ""; typelen = 0;
 	}
     } else {
-	if        (Hangul_LIni <= code && code <= Hangul_LEnd ||
-		   HangulL2Ini <= code && code <= HangulL2Fin) {
+	if        (codeRange(Hangul_LIni, Hangul_LEnd) ||
+		   codeRange(HangulL2Ini, HangulL2Fin)) {
 	    hangtype = "L"; typelen = 1;
-	} else if (Hangul_VIni <= code && code <= Hangul_VEnd ||
-		   HangulV2Ini <= code && code <= HangulV2Fin) {
+	} else if (codeRange(Hangul_VIni, Hangul_VEnd) ||
+		   codeRange(HangulV2Ini, HangulV2Fin)) {
 	    hangtype = "V"; typelen = 1;
-	} else if (Hangul_TIni <= code && code <= Hangul_TEnd ||
-		   HangulT2Ini <= code && code <= HangulT2Fin) {
+	} else if (codeRange(Hangul_TIni, Hangul_TEnd) ||
+		   codeRange(HangulT2Ini, HangulT2Fin)) {
 	    hangtype = "T"; typelen = 1;
 	} else {
 	    hangtype = ""; typelen = 0;
@@ -284,7 +303,7 @@ _derivCE_9 (code)
     bool basic_unified = 0;
   PPCODE:
     if (CJK_UidIni <= code) {
-	if (0xFA0E <= code && code <= 0xFA29)
+	if (codeRange(0xFA0E, 0xFA29))
 	    basic_unified = (bool)UnifiedCompat[code - 0xFA0E];
 	else
 	    basic_unified = (ix >= 3 ? (code <= CJK_UidF52) :
@@ -294,12 +313,13 @@ _derivCE_9 (code)
     }
     base = (basic_unified)
 	    ? 0xFB40 : /* CJK */
-	   (CJK_ExtAIni <= code && code <= CJK_ExtAFin ||
-	    CJK_ExtBIni <= code && code <= CJK_ExtBFin ||
-	    ix >= 3 &&
-	    CJK_ExtCIni <= code && code <= CJK_ExtCFin ||
-	    ix >= 4 &&
-	    CJK_ExtDIni <= code && code <= CJK_ExtDFin)
+	   ((codeRange(CJK_ExtAIni, CJK_ExtAFin))
+		||
+	    (codeRange(CJK_ExtBIni, CJK_ExtBFin))
+		||
+	    (ix >= 3 && codeRange(CJK_ExtCIni, CJK_ExtCFin))
+		||
+	    (ix >= 4 && codeRange(CJK_ExtDIni, CJK_ExtDFin)))
 	    ? 0xFB80   /* CJK ext. */
 	    : 0xFBC0;  /* others */
     aaaa =  base + (code >> 15);
@@ -353,7 +373,7 @@ _isUIdeo (code, uca_vers)
   CODE:
     /* uca_vers = 0 for _uideoCE_8() */
     if (CJK_UidIni <= code) {
-	if (0xFA0E <= code && code <= 0xFA29)
+	if (codeRange(0xFA0E, 0xFA29))
 	    basic_unified = (bool)UnifiedCompat[code - 0xFA0E];
 	else
 	    basic_unified = (uca_vers >= 20 ? (code <= CJK_UidF52) :
@@ -364,13 +384,13 @@ _isUIdeo (code, uca_vers)
     RETVAL = boolSV(
 	(basic_unified)
 		||
-	(CJK_ExtAIni <= code && code <= CJK_ExtAFin)
+	(codeRange(CJK_ExtAIni, CJK_ExtAFin))
 		||
-	(uca_vers >=  8 && CJK_ExtBIni <= code && code <= CJK_ExtBFin)
+	(uca_vers >=  8 && codeRange(CJK_ExtBIni, CJK_ExtBFin))
 		||
-	(uca_vers >= 20 && CJK_ExtCIni <= code && code <= CJK_ExtCFin)
+	(uca_vers >= 20 && codeRange(CJK_ExtCIni, CJK_ExtCFin))
 		||
-	(uca_vers >= 22 && CJK_ExtDIni <= code && code <= CJK_ExtDFin)
+	(uca_vers >= 22 && codeRange(CJK_ExtDIni, CJK_ExtDFin))
     );
 OUTPUT:
     RETVAL
@@ -663,7 +683,7 @@ unpack_U (src)
     e = s + srclen;
 
     for (p = s; p < e; p += retlen) {
-	uv = utf8n_to_uvuni(p, e - p, &retlen, UTF8_ALLOW_ANY);
+	uv = utf8n_to_uvuni(p, e - p, &retlen, AllowAnyUTF);
 	if (!retlen)
 	    croak(ErrRetlenIsZero);
 	XPUSHs(sv_2mortal(newSVuv(uv)));

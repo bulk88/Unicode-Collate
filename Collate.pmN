@@ -14,7 +14,7 @@ use File::Spec;
 
 no warnings 'utf8';
 
-our $VERSION = '0.68';
+our $VERSION = '0.69';
 our $PACKAGE = __PACKAGE__;
 
 my @Path = qw(Unicode Collate);
@@ -692,7 +692,7 @@ sub getWt
 			$map->{$contract} and @decH = ($contract, $decH[2]);
 		    }
 		    # even if V's ignorable, LT contraction is not supported.
-		    # If such a situatution were required, NFD should be used.
+		    # If such a situation were required, NFD should be used.
 		}
 		if (@decH == 3 && $max->{$decH[1]}) {
 		    my $contract = join(CODE_SEP, @decH[1,2]);
@@ -964,7 +964,7 @@ sub _isIllegal {
     );
 }
 
-sub _isNonchar {
+sub _isNonchar { # should be called only if ! _isIllegal($code).
     my $code = shift;
     return((($code & 0xFFFE) == 0xFFFE)         # ??FFF[EF] (cf. utf8.c)
 	|| (0xD800 <= $code && $code <= 0xDFFF) # unpaired surrogates
@@ -1023,7 +1023,7 @@ sub _eqArray($$$)
     my $lev = shift;
 
     for my $g (0..@$substr-1){
-	# Do the $g'th graphemes have the same number of AV weigths?
+	# Do the $g'th graphemes have the same number of AV weights?
 	return if @{ $source->[$g] } != @{ $substr->[$g] };
 
 	for my $w (0..@{ $substr->[$g] }-1) {
@@ -1321,7 +1321,7 @@ The following tracking versions are supported.  The default is 20.
 
 Note: Recent UTS #10 renames "Tracking Version" to "Revision."
 
-* Noncharacters (e.g. U+FFFF) are not ignored, and can be overrided
+* Noncharacters (e.g. U+FFFF) are not ignored, and can be overridden
 since C<UCA_Version> 22.
 
 * Fully ignorable characters were ignored, and would not interrupt
@@ -1359,7 +1359,7 @@ forwards at all the levels.
 
 If the same character (or a sequence of characters) exists
 in the collation element table through C<table>,
-mapping to collation elements is overrided.
+mapping to collation elements is overridden.
 If it does not exist, the mapping is defined additionally.
 
     entry => <<'ENTRY', # for DUCET v4.0.0 (allkeys-4.0.0.txt)
@@ -1536,7 +1536,7 @@ those in the CJK Unified Ideographs Extension A etc.
     Ext.D (U+2B740..U+2B81D) if UCA_Version is 22 or greater.
 
 Through C<overrideCJK>, ordering of CJK unified ideographs (including
-extensions) can be overrided.
+extensions) can be overridden.
 
 ex. CJK unified ideographs in the JIS code point order.
 
@@ -1579,7 +1579,7 @@ in C<table> or C<entry> is still valid.
 B<Note:> In addition to them, 12 CJK compatibility ideographs (C<U+FA0E>,
 C<U+FA0F>, C<U+FA11>, C<U+FA13>, C<U+FA14>, C<U+FA1F>, C<U+FA21>, C<U+FA23>,
 C<U+FA24>, C<U+FA27>, C<U+FA28>, C<U+FA29>) are also treated as CJK unified
-ideographs. But they can't be overrided via C<overrideCJK> when you use
+ideographs. But they can't be overridden via C<overrideCJK> when you use
 DUCET, as the table includes weights for them. C<table> or C<entry> has
 priority over C<overrideCJK>.
 
@@ -1589,7 +1589,7 @@ priority over C<overrideCJK>.
 
 By default, Hangul syllables are decomposed into Hangul Jamo,
 even if C<(normalization =E<gt> undef)>.
-But the mapping of Hangul syllables may be overrided.
+But the mapping of Hangul syllables may be overridden.
 
 This parameter works like C<overrideCJK>, so see there for examples.
 
@@ -1750,7 +1750,7 @@ this parameter doesn't work validly.
 
 This key allows to variable weighting for variable collation elements,
 which are marked with an ASTERISK in the table
-(NOTE: Many punction marks and symbols are variable in F<allkeys.txt>).
+(NOTE: Many punctuation marks and symbols are variable in F<allkeys.txt>).
 
    variable => 'blanked', 'non-ignorable', 'shifted', or 'shift-trimmed'.
 
@@ -2058,7 +2058,7 @@ B<Unicode::Normalize is required to try The Conformance Test.>
 =head1 AUTHOR, COPYRIGHT AND LICENSE
 
 The Unicode::Collate module for perl was written by SADAHIRO Tomoyuki,
-<SADAHIRO@cpan.org>. This module is Copyright(C) 2001-2010,
+<SADAHIRO@cpan.org>. This module is Copyright(C) 2001-2011,
 SADAHIRO Tomoyuki. Japan. All rights reserved.
 
 This module is free software; you can redistribute it and/or

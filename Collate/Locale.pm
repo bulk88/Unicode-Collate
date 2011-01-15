@@ -4,7 +4,7 @@ use strict;
 use Carp;
 use base qw(Unicode::Collate);
 
-our $VERSION = '0.68';
+our $VERSION = '0.69';
 
 use File::Spec;
 
@@ -297,7 +297,7 @@ tailored as well as it. For example, even though W is tailored,
 fullwidth W (C<U+FF37>), W with acute (C<U+1E82>), etc. are not
 tailored. The result may depend on whether source strings are
 normalized or not, and whether decomposed or composed.
-Thus C<(normalization =E<gt> undef> is less preferred.
+Thus C<(normalization =E<gt> undef)> is less preferred.
 
 =back
 
@@ -305,7 +305,7 @@ Thus C<(normalization =E<gt> undef> is less preferred.
 
 The Unicode::Collate::Locale module for perl was written
 by SADAHIRO Tomoyuki, <SADAHIRO@cpan.org>.
-This module is Copyright(C) 2004-2010, SADAHIRO Tomoyuki. Japan.
+This module is Copyright(C) 2004-2011, SADAHIRO Tomoyuki. Japan.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
