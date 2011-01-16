@@ -1,5 +1,8 @@
 Revision history for Perl module Unicode::Collate.
 
+0.70  Sun Jan 16 20:31:07 2011
+    - Now U::C::Locale->new will use the compiled DUCET via XS.
+
 0.69  Sat Jan 15 19:41:11 2011
     - clarified about XSUB. revised INSTALL in README.
     - xs: flag passed to utf8n_to_uvuni().

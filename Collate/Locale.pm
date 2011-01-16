@@ -4,12 +4,11 @@ use strict;
 use Carp;
 use base qw(Unicode::Collate);
 
-our $VERSION = '0.69';
+our $VERSION = '0.70';
 
 use File::Spec;
 
 (my $ModPath = $INC{'Unicode/Collate/Locale.pm'}) =~ s/\.pm$//;
-my $KeyPath = File::Spec->catfile('allkeys.txt');
 my $PL_EXT  = '.pl';
 
 my %LocaleFile = map { ($_, $_) } qw(
@@ -71,7 +70,6 @@ sub new {
     if (exists $hash{table}) {
 	croak "your table can't be used with Unicode::Collate::Locale";
     }
-    $hash{table} = $KeyPath;
 
     my $href = _fetchpl($hash{accepted_locale});
     while (my($k,$v) = each %$href) {
