@@ -111,7 +111,7 @@ _fetch_simple (uv)
     UV uv
   PREINIT:
     U8 ***plane, **row;
-    char* result = NULL;
+    U8* result = NULL;
   PPCODE:
     if (!OVER_UTF_MAX(uv)){
 	plane = (U8***)UCA_simple[uv >> 16];
@@ -140,7 +140,7 @@ _ignorable_simple (uv)
   PREINIT:
     U8 ***plane, **row;
     int num = -1;
-    char* result = NULL;
+    U8* result = NULL;
   CODE:
     if (!OVER_UTF_MAX(uv)){
 	plane = (U8***)UCA_simple[uv >> 16];
@@ -430,7 +430,7 @@ mk_SortKey (self, buf)
 	dlen = 2 * (MaxLevel - 1);
 	dst = newSV(dlen);
 	(void)SvPOK_only(dst);
-	d = SvPVX(dst);
+	d = (U8*)SvPVX(dst);
 	while (dlen--)
 	    *d++ = '\0';
     }
@@ -456,7 +456,7 @@ mk_SortKey (self, buf)
 	    svp = av_fetch(bufAV, i, FALSE);
 
 	    if (svp && SvPOK(*svp))
-		v = SvPV(*svp, vlen);
+		v = (U8*)SvPV(*svp, vlen);
 	    else
 		croak("not a vwt.");
 
@@ -506,7 +506,7 @@ mk_SortKey (self, buf)
 
 	dst = newSV(dlen);
 	(void)SvPOK_only(dst);
-	d = SvPVX(dst);
+	d = (U8*)SvPVX(dst);
 
 	svp = hv_fetch(selfHV, "backwardsFlag", 13, FALSE);
 	back_flag = svp ? SvUV(*svp) : (UV)0;

@@ -1,5 +1,8 @@
 Revision history for Perl module Unicode::Collate.
 
+0.72  Sat Jan 22 17:28:32 2011
+    - xs: fix mixing char* and U8*.
+
 0.71  Tue Jan 18 22:29:44 2011
     - t/loc_test.t should not fail without Unicode::Normalize.
 
