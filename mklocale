@@ -380,6 +380,7 @@ for my $o (@OtherEquiv) {
     close $fh;
 
     open my $pm, ">Korean.pm" or die 'Korean.pm';
+    binmode $pm;
     print $pm $KO_head;
 
     my $count = 0;
@@ -409,15 +410,15 @@ closedir DIR;
 
 mkdir 'Locale', 0666;
 for my $txt (@txts) {
-    my($fh, $ph);
     my %locale_keys;
     my $txtfile = File::Spec->catfile('data', $txt);
     my $pl = $txt;
        $pl =~ s/\.txt\z/.pl/ or croak "$PACKAGE: data/$txt is not .txt";
     my $plfile = File::Spec->catfile('Locale', $pl);
 
-    open($fh, $txtfile) or croak "$PACKAGE: data/$txt is not found";
-    open($ph, ">$plfile") or croak "$PACKAGE: locale/$pl can't be made";
+    open my $fh,  $txtfile  or croak "$PACKAGE: data/$txt is not found";
+    open my $ph, ">$plfile" or croak "$PACKAGE: locale/$pl can't be made";
+    binmode $ph;
 
     my $ptxt  = '';
     my $entry = '';

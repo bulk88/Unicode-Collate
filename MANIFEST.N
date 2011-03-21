@@ -53,7 +53,6 @@ Collate/Locale/sk.pl		Unicode::Collate::Locale
 Collate/Locale/sl.pl		Unicode::Collate::Locale
 Collate/Locale/sq.pl		Unicode::Collate::Locale
 Collate/Locale/sv.pl		Unicode::Collate::Locale
-Collate/Locale/sw.pl		Unicode::Collate::Locale
 Collate/Locale/tn.pl		Unicode::Collate::Locale
 Collate/Locale/to.pl		Unicode::Collate::Locale
 Collate/Locale/tr.pl		Unicode::Collate::Locale
@@ -108,7 +107,6 @@ data/sk.txt		# preparating Unicode::Collate::Locale
 data/sl.txt		# preparating Unicode::Collate::Locale
 data/sq.txt		# preparating Unicode::Collate::Locale
 data/sv.txt		# preparating Unicode::Collate::Locale
-data/sw.txt		# preparating Unicode::Collate::Locale
 data/tn.txt		# preparating Unicode::Collate::Locale
 data/to.txt		# preparating Unicode::Collate::Locale
 data/tr.txt		# preparating Unicode::Collate::Locale

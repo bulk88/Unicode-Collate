@@ -1,7 +1,7 @@
 ---
 name: Unicode-Collate
 abstract: Unicode Collation Algorithm
-version: 0.73
+version: 0.74
 author:
   - SADAHIRO Tomoyuki <SADAHIRO@cpan.org>
 license: perl
