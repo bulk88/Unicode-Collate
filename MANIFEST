@@ -147,6 +147,7 @@ t/contract.t
 t/default.t	test using DUCET
 t/hangtype.t
 t/hangul.t
+t/iglevel2.t
 t/ignor.t
 t/illegal.t
 t/illegalp.t
@@ -221,6 +222,7 @@ t/overcjk0.t
 t/overcjk1.t
 t/override.t
 t/rearrang.t
+t/rewrite.t	test using DUCET
 t/test.t
 t/trailwt.t
 t/variable.t

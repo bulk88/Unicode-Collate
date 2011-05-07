@@ -4,7 +4,7 @@ use strict;
 use Carp;
 use base qw(Unicode::Collate);
 
-our $VERSION = '0.74';
+our $VERSION = '0.75';
 
 use File::Spec;
 

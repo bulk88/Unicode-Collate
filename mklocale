@@ -293,7 +293,7 @@ for my $o (@OtherEquiv) {
 
 {
     my($f, $fh);
-    foreach my $d ('.') {
+    foreach my $d (File::Spec->curdir()) {
 	$f = File::Spec->catfile($d, "Collate", "allkeys.txt");
 	last if open($fh, $f);
 	$f = undef;
@@ -342,7 +342,7 @@ for my $o (@OtherEquiv) {
 
 {
     my($f, $fh);
-    foreach my $d ('.') {
+    foreach my $d (File::Spec->curdir()) {
 	$f = File::Spec->catfile($d, "Collate", "CJK", "Korean.pm");
 	last if open($fh, $f);
 	$f = undef;
@@ -404,20 +404,22 @@ for my $o (@OtherEquiv) {
 
 ##### Locale/*.pl #####
 
-opendir DIR, "data" or croak "no data";
-my @txts = grep !/^\./, readdir DIR;
+my $source = 'data';
+opendir DIR, $source or croak "no $source";
+my @txts = grep /^[a-zA-Z]/, readdir DIR;
 closedir DIR;
 
-mkdir 'Locale', 0666;
+my $target = 'Locale';
+mkdir $target, 0666;
 for my $txt (@txts) {
     my %locale_keys;
-    my $txtfile = File::Spec->catfile('data', $txt);
+    my $txtfile = File::Spec->catfile($source, $txt);
     my $pl = $txt;
-       $pl =~ s/\.txt\z/.pl/ or croak "$PACKAGE: data/$txt is not .txt";
-    my $plfile = File::Spec->catfile('Locale', $pl);
+       $pl =~ s/\.txt\z/.pl/ or croak "$PACKAGE: $source/$txt is not .txt";
+    my $plfile = File::Spec->catfile($target, $pl);
 
-    open my $fh,  $txtfile  or croak "$PACKAGE: data/$txt is not found";
-    open my $ph, ">$plfile" or croak "$PACKAGE: locale/$pl can't be made";
+    open my $fh,  $txtfile  or croak "$PACKAGE: $source/$txt is not found";
+    open my $ph, ">$plfile" or croak "$PACKAGE: $target/$pl can't be made";
     binmode $ph;
 
     my $ptxt  = '';
