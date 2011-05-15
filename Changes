@@ -1,5 +1,9 @@
 Revision history for Perl module Unicode::Collate.
 
+0.76  Sun May 15 10:06:59 2011
+    - updated CJK/Pinyin.pm and CJK/Stroke.pm according to CLDR 1.9.1 using
+      type='pinyin' alt='short' and type='stroke' alt='short' respectively.
+
 0.75  Sat May  7 21:07:38 2011
     - supported ignore_level2 and rewrite.
     - Added iglevel2.t and rewrite.t in t.

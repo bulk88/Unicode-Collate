@@ -14,7 +14,7 @@ use File::Spec;
 
 no warnings 'utf8';
 
-our $VERSION = '0.75';
+our $VERSION = '0.76';
 our $PACKAGE = __PACKAGE__;
 
 ### begin XS only ###
@@ -1420,7 +1420,7 @@ but it is not warned at present.>
 If specified, the coderef is used to rewrite lines in C<table> or C<entry>.
 The coderef will get each line, and then should return a rewritten line
 according to the UCA file format.
-If the coderef return an empty line, the line will be skipped.
+If the coderef returns an empty line, the line will be skipped.
 
 e.g. any primary ignorable characters into tertiary ignorable:
 
@@ -1708,7 +1708,7 @@ returns an empty list.
 
 If C<$substring> matches a part of C<$string>,
 the first occurrence of the matching part is replaced by C<$replacement>
-(C<$string> is modified) and return C<$count> (always equals to C<1>).
+(C<$string> is modified) and C<$count> (always equals to C<1>) is returned.
 
 C<$replacement> can be a C<CODEREF>,
 taking the matching part as an argument,
@@ -1718,8 +1718,8 @@ and returning a string to replace the matching part
 =item C<$count = $Collator-E<gt>gsubst($string, $substring, $replacement)>
 
 If C<$substring> matches a part of C<$string>,
-all the occurrences of the matching part is replaced by C<$replacement>
-(C<$string> is modified) and return C<$count>.
+all the occurrences of the matching part are replaced by C<$replacement>
+(C<$string> is modified) and C<$count> is returned.
 
 C<$replacement> can be a C<CODEREF>,
 taking the matching part as an argument,
@@ -1736,20 +1736,20 @@ e.g.
   # now $str is "<b>Camel</b> donkey zebra <b>came\x{301}l</b> <b>CAMEL</b> horse <b>cam\0e\0l</b>...";
   # i.e., all the camels are made bold-faced.
 
-  Examples: levels and level2_ignored - what does camel match?
-  ------------------------------------------------------------------
-   level  level2_ignored  |  camel  Camel  came\x{301}l  c-a-m-e-l
-  ------------------------|-----------------------------------------
-     1        false       |   yes    yes      yes          yes
-     2        false       |   yes    yes      no           yes
-     3        false       |   yes    no       no           yes
-     4        false       |   yes    no       no           no
-  ------------------------|-----------------------------------------
-     1        true        |   yes    yes      yes          yes
-     2        true        |   yes    yes      yes          yes
-     3        true        |   yes    no       yes          yes
-     4        true        |   yes    no       yes          no
-  ------------------------------------------------------------------
+   Examples: levels and ignore_level2 - what does camel match?
+  ---------------------------------------------------------------------------
+   level  ignore_level2  |  camel  Camel  came\x{301}l  c-a-m-e-l  cam\0e\0l
+  -----------------------|---------------------------------------------------
+     1        false      |   yes    yes      yes          yes        yes
+     2        false      |   yes    yes      no           yes        yes
+     3        false      |   yes    no       no           yes        yes
+     4        false      |   yes    no       no           no         yes
+  -----------------------|---------------------------------------------------
+     1        true       |   yes    yes      yes          yes        yes
+     2        true       |   yes    yes      yes          yes        yes
+     3        true       |   yes    no       yes          yes        yes
+     4        true       |   yes    no       yes          no         yes
+  ---------------------------------------------------------------------------
    note: if variable => non-ignorable, camel doesn't match c-a-m-e-l
          at any level.
 
@@ -1763,7 +1763,7 @@ e.g.
 
 =item C<$modified_collator = $Collator-E<gt>change(%new_tailoring)>
 
-Change the value of specified keys and returns the changed part.
+Changes the value of specified keys and returns the changed part.
 
     $Collator = Unicode::Collate->new(level => 4);
 

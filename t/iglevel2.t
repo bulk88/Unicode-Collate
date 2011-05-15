@@ -167,52 +167,51 @@ ok($Collator->lt("\x{03D5}", "\x{03A6}"));
 
 {
     my $str;
-    my $camel = "camel Camel came\x{301}l c-a-m-e-l";
+    my $camel = "camel Camel came\x{301}l c-a-m-e-l cam\0e\0l";
 
     $Collator->change(ignore_level2 => 0);
 
     $Collator->change(level => 1);
     $str = $camel;
     $Collator->gsubst($str, "camel", sub { "=$_[0]=" });
-    ok($str, "=camel= =Camel= =came\x{301}l= =c-a-m-e-l=");
+    ok($str, "=camel= =Camel= =came\x{301}l= =c-a-m-e-l= =cam\0e\0l=");
 
     $Collator->change(level => 2);
     $str = $camel;
     $Collator->gsubst($str, "camel", sub { "=$_[0]=" });
-    ok($str, "=camel= =Camel= came\x{301}l =c-a-m-e-l=");
+    ok($str, "=camel= =Camel= came\x{301}l =c-a-m-e-l= =cam\0e\0l=");
 
     $Collator->change(level => 3);
     $str = $camel;
     $Collator->gsubst($str, "camel", sub { "=$_[0]=" });
-    ok($str, "=camel= Camel came\x{301}l =c-a-m-e-l=");
+    ok($str, "=camel= Camel came\x{301}l =c-a-m-e-l= =cam\0e\0l=");
 
     $Collator->change(level => 4);
     $str = $camel;
     $Collator->gsubst($str, "camel", sub { "=$_[0]=" });
-    ok($str, "=camel= Camel came\x{301}l c-a-m-e-l");
+    ok($str, "=camel= Camel came\x{301}l c-a-m-e-l =cam\0e\0l=");
 
     $Collator->change(ignore_level2 => 1);
 
     $Collator->change(level => 1);
     $str = $camel;
     $Collator->gsubst($str, "camel", sub { "=$_[0]=" });
-    ok($str, "=camel= =Camel= =came\x{301}l= =c-a-m-e-l=");
+    ok($str, "=camel= =Camel= =came\x{301}l= =c-a-m-e-l= =cam\0e\0l=");
 
     $Collator->change(level => 2);
     $str = $camel;
     $Collator->gsubst($str, "camel", sub { "=$_[0]=" });
-    ok($str, "=camel= =Camel= =came\x{301}l= =c-a-m-e-l=");
+    ok($str, "=camel= =Camel= =came\x{301}l= =c-a-m-e-l= =cam\0e\0l=");
 
     $Collator->change(level => 3);
     $str = $camel;
     $Collator->gsubst($str, "camel", sub { "=$_[0]=" });
-    ok($str, "=camel= Camel =came\x{301}l= =c-a-m-e-l=");
+    ok($str, "=camel= Camel =came\x{301}l= =c-a-m-e-l= =cam\0e\0l=");
 
     $Collator->change(level => 4);
     $str = $camel;
     $Collator->gsubst($str, "camel", sub { "=$_[0]=" });
-    ok($str, "=camel= Camel =came\x{301}l= c-a-m-e-l");
-    $Collator->change(level => 1);
+    ok($str, "=camel= Camel =came\x{301}l= c-a-m-e-l =cam\0e\0l=");
 }
 
 # 42
