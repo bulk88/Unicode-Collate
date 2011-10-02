@@ -13,7 +13,10 @@ Collate/CJK/Stroke.pm
 Collate/Locale.pm		Unicode::Collate::Locale
 Collate/Locale/af.pl		Unicode::Collate::Locale
 Collate/Locale/ar.pl		Unicode::Collate::Locale
+Collate/Locale/as.pl		Unicode::Collate::Locale
 Collate/Locale/az.pl		Unicode::Collate::Locale
+Collate/Locale/be.pl		Unicode::Collate::Locale
+Collate/Locale/bg.pl		Unicode::Collate::Locale
 Collate/Locale/ca.pl		Unicode::Collate::Locale
 Collate/Locale/cs.pl		Unicode::Collate::Locale
 Collate/Locale/cy.pl		Unicode::Collate::Locale
@@ -24,9 +27,11 @@ Collate/Locale/es.pl		Unicode::Collate::Locale
 Collate/Locale/es_trad.pl	Unicode::Collate::Locale
 Collate/Locale/et.pl		Unicode::Collate::Locale
 Collate/Locale/fi.pl		Unicode::Collate::Locale
+Collate/Locale/fi_phone.pl	Unicode::Collate::Locale
 Collate/Locale/fil.pl		Unicode::Collate::Locale
 Collate/Locale/fo.pl		Unicode::Collate::Locale
 Collate/Locale/fr.pl		Unicode::Collate::Locale
+Collate/Locale/gu.pl		Unicode::Collate::Locale
 Collate/Locale/ha.pl		Unicode::Collate::Locale
 Collate/Locale/haw.pl		Unicode::Collate::Locale
 Collate/Locale/hr.pl		Unicode::Collate::Locale
@@ -67,7 +72,10 @@ Collate/Locale/zh_pin.pl	Unicode::Collate::Locale
 Collate/Locale/zh_strk.pl	Unicode::Collate::Locale
 data/af.txt		# preparating Unicode::Collate::Locale
 data/ar.txt		# preparating Unicode::Collate::Locale
+data/as.txt		# preparating Unicode::Collate::Locale
 data/az.txt		# preparating Unicode::Collate::Locale
+data/be.txt		# preparating Unicode::Collate::Locale
+data/bg.txt		# preparating Unicode::Collate::Locale
 data/ca.txt		# preparating Unicode::Collate::Locale
 data/cs.txt		# preparating Unicode::Collate::Locale
 data/cy.txt		# preparating Unicode::Collate::Locale
@@ -78,9 +86,11 @@ data/es.txt		# preparating Unicode::Collate::Locale
 data/es_trad.txt	# preparating Unicode::Collate::Locale
 data/et.txt		# preparating Unicode::Collate::Locale
 data/fi.txt		# preparating Unicode::Collate::Locale
+data/fi_phone.txt	# preparating Unicode::Collate::Locale
 data/fil.txt		# preparating Unicode::Collate::Locale
 data/fo.txt		# preparating Unicode::Collate::Locale
 data/fr.txt		# preparating Unicode::Collate::Locale
+data/gu.txt		# preparating Unicode::Collate::Locale
 data/ha.txt		# preparating Unicode::Collate::Locale
 data/haw.txt		# preparating Unicode::Collate::Locale
 data/hr.txt		# preparating Unicode::Collate::Locale
@@ -154,6 +164,7 @@ t/illegalp.t
 t/index.t
 t/loc_af.t	test Unicode::Collate::Locale
 t/loc_ar.t	test Unicode::Collate::Locale
+t/loc_as.t	test Unicode::Collate::Locale
 t/loc_az.t	test Unicode::Collate::Locale
 t/loc_be.t	test Unicode::Collate::Locale
 t/loc_bg.t	test Unicode::Collate::Locale
@@ -169,9 +180,11 @@ t/loc_es.t	test Unicode::Collate::Locale
 t/loc_estr.t	test Unicode::Collate::Locale
 t/loc_et.t	test Unicode::Collate::Locale
 t/loc_fi.t	test Unicode::Collate::Locale
+t/loc_fiph.t	test Unicode::Collate::Locale
 t/loc_fil.t	test Unicode::Collate::Locale
 t/loc_fo.t	test Unicode::Collate::Locale
 t/loc_fr.t	test Unicode::Collate::Locale
+t/loc_gu.t	test Unicode::Collate::Locale
 t/loc_ha.t	test Unicode::Collate::Locale
 t/loc_haw.t	test Unicode::Collate::Locale
 t/loc_hr.t	test Unicode::Collate::Locale

@@ -51,6 +51,7 @@
 #    suppress 0400-0417 041A-0437 043A-045F
 #        will be converted to
 #    suppress => [0x0400..0x0417, 0x041A..0x0437, 0x043A..0x045F],
+#    (code points may be listed in few lines)
 #
 # use
 #
@@ -263,9 +264,6 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1EE4;U<0323>
 1EF5;y<0323>
 1EF4;Y<0323>
-=0629= (arabic-teh-marbuta)
-FE93;<0629>
-FE94;<0629>
 =1EB8= (e-dot-below)
 1EC7;<1EB9><0302>
 1EC6;<1EB8><0302>
@@ -315,9 +313,12 @@ for my $o (@OtherEquiv) {
 	trim($e);
 	trim($k);
 	$name =~ s/; QQ[A-Z]+//;
+	$name =~ s/^ ?\[[0-9A-F]+\] ?//;
 
-	next if $k eq '[.0000.0000.0000.0000]';
-
+	if ($k eq '[.0000.0000.0000.0000]') {
+	    $Name{$e} = $name;
+	    next;
+	}
 	croak "Wrong Entry: <charList> must be separated by ';' ".
 	      "from <collElement>" if ! $k;
 	push @{ $Equiv{$k} }, $e if exists $Code{$k};
@@ -426,6 +427,7 @@ for my $txt (@txts) {
     my $entry = '';
     while (<$fh>) {
 	chomp;
+	next if /^\s*\z/;
 	if (/^use/) {
 	    print $ph "$_;\n";
 	    next;
@@ -443,20 +445,26 @@ for my $txt (@txts) {
 	    next;
 	}
 	if (s/^suppress//) {
+	    s/\s*-\s*/../g;
 	    my @c = split;
-	    for (@c) {
-		s/(?:0[xX])?([0-9A-Fa-f]+)/0x$1/g;
-		s/-/../g;
-	    }
+	    s/(?:0[Xx])?([0-9A-Fa-f]+)/0x$1/g for @c;
 	    my $list = join ", ", @c;
 	    $ptxt .= "   suppress => [$list],\n";
+	    next;
+	}
+	if (/^([\s\-0-9A-Fa-fXx]+)\z/) { # continue the last list
+	    s/\s*-\s*/../g;
+	    my @c = split;
+	    s/(?:0[Xx])?([0-9A-Fa-f]+)/0x$1/g for @c;
+	    my $list = join ", ", @c;
+	    $ptxt =~ s/\](,$)/$1/;
+	    $ptxt .= "\t\t$list],\n";
 	    next;
 	}
 	if (/^\s*(#\s*)/) {
 	    $ptxt .= "$_\n" if $1 ne '#';
 	    next;
 	}
-	next if /^\s*\z/;
 
 	my($e,$rule) = split_e_rule($_);
 	my $name = getname($e);
