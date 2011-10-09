@@ -14,8 +14,8 @@ suppress 0410 0430 04D8 04D9 0413 0433 0415 0435
 0403;<0413><0301>
 #0450;<0435><0300> # not contraction
 #0400;<0415><0300> # not contraction
-#0451;<0435><0308> # not contraction
-#0401;<0415><0308> # not contraction
+#0451;<0435><0308> # not contraction # tailored
+#0401;<0415><0308> # not contraction # tailored
 04D7;<0435><0306>
 04D6;<0415><0306>
 #04C2;<0436><0306> # not contraction

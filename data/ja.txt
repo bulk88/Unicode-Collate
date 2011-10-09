@@ -87,6 +87,8 @@ overrideCJK \&Unicode::Collate::CJK::JISX0208::weightJISX0208
 3094;<3046><3099>
 3095;<30F5>+++0
 3096;<30F6>+++0
+309D;<30FD>+++0
+309E;<309D><3099>
 #fullwidth and halfwidth
 3000;<0020>
 FF01;<0021>

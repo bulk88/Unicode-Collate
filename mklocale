@@ -110,7 +110,7 @@ my (%Keys, %Code, %Equiv, %Name, $vDUCET, %JamoWt1);
 my $JamoWt2 = 0;
 
 my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
-=00C2= (a-circ)
+=00C2= (A-circ)
 1EA7;<00E2><0300>
 1EA6;<00C2><0300>
 1EA5;<00E2><0301>
@@ -121,19 +121,19 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1EA8;<00C2><0309>
 1EAD;<00E2><0323>
 1EAC;<00C2><0323>
-=00C4= (a-uml)
+=00C4= (A-uml)
 01DF;<00E4><0304>
 01DE;<00C4><0304>
-=00C5= (a-ring)
+=00C5= (A-ring)
 01FB;<00E5><0301>
 01FA;<00C5><0301>
-=00C6= (ae-lig)
+=00C6= (AE-lig)
 1D2D;<00C6>+++12
 01FD;<00E6><0301>
 01FC;<00C6><0301>
 01E3;<00E6><0304>
 01E2;<00C6><0304>
-=00CA= (e-circ)
+=00CA= (E-circ)
 1EC1;<00EA><0300>
 1EC0;<00CA><0300>
 1EBF;<00EA><0301>
@@ -144,7 +144,7 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1EC2;<00CA><0309>
 1EC7;<00EA><0323>
 1EC6;<00CA><0323>
-=00D4= (o-circ)
+=00D4= (O-circ)
 1ED3;<00F4><0300>
 1ED2;<00D4><0300>
 1ED1;<00F4><0301>
@@ -155,7 +155,7 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1ED4;<00D4><0309>
 1ED9;<00F4><0323>
 1ED8;<00D4><0323>
-=00D5= (o-tilde)
+=00D5= (O-tilde)
 1E4D;<00F5><0301>
 1E4C;<00D5><0301>
 022D;<00F5><0304>
@@ -164,13 +164,13 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1E4E;<00D5><0308>
 1EE1;<00F5><031B>
 1EE0;<00D5><031B>
-=00D6= (o-uml)
+=00D6= (O-uml)
 022B;<00F6><0304>
 022A;<00D6><0304>
-=00D8= (o-slash)
+=00D8= (O-slash)
 01FF;<00F8><0301>
 01FE;<00D8><0301>
-=00DC= (u-uml)
+=00DC= (U-uml)
 01DC;<00FC><0300>
 01DB;<00DC><0300>
 01D8;<00FC><0301>
@@ -179,7 +179,7 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 01D5;<00DC><0304>
 01DA;<00FC><030C>
 01D9;<00DC><030C>
-=0102= (a-breve)
+=0102= (A-breve)
 1EB1;<0103><0300>
 1EB0;<0102><0300>
 1EAF;<0103><0301>
@@ -190,7 +190,12 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1EB2;<0102><0309>
 1EB7;<0103><0323>
 1EB6;<0102><0323>
-=01A0= (o-horn)
+=0186= (open-O)
+1D53;<0186>+++12
+=0190= (open-E)
+2107;<0190>+++2
+1D4B;<0190>+++12
+=01A0= (O-horn)
 1EDD;<01A1><0300>
 1EDC;<01A0><0300>
 1EDB;<01A1><0301>
@@ -201,7 +206,7 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1EDE;<01A0><0309>
 1EE3;<01A1><0323>
 1EE2;<01A0><0323>
-=01AF= (u-horn)
+=01AF= (U-horn)
 1EEB;<01B0><0300>
 1EEA;<01AF><0300>
 1EE9;<01B0><0301>
@@ -264,15 +269,15 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1EE4;U<0323>
 1EF5;y<0323>
 1EF4;Y<0323>
-=1EB8= (e-dot-below)
+=1EB8= (E-dot-below)
 1EC7;<1EB9><0302>
 1EC6;<1EB8><0302>
-=1ECC= (o-dot-below)
+=1ECC= (O-dot-below)
 1ED9;<1ECD><0302>
 1ED8;<1ECC><0302>
 1EE3;<1ECD><031B>
 1EE2;<1ECC><031B>
-=1EE4= (u-dot-below)
+=1EE4= (U-dot-below)
 1EF1;<1EE5><031B>
 1EF0;<1EE4><031B>
 OTHEREQUIV
@@ -281,7 +286,7 @@ my %OtherEquiv;
 for my $o (@OtherEquiv) {
     my @ln = split /\n/, $o;
     my $uv = shift @ln;
-    $uv =~ s/ *\([a-z-]+\) *//;
+    $uv =~ s/ *\([a-zA-Z-]+\) *//;
     $uv =~ tr/=//d;
     croak "$PACKAGE: $uv is invalid in OTHEREQUIV" if $uv !~ /^[0-9A-F]+\z/;
     $OtherEquiv{$uv} = \@ln;
