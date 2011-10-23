@@ -269,6 +269,15 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1EE4;U<0323>
 1EF5;y<0323>
 1EF4;Y<0323>
+=0933= (Devanagari-LLA)
+0934;<0933><093C>
+=0A3C= (Gurmukhi-Nukta)
+0A33;<0A32><0A3C>
+0A36;<0A38><0A3C>
+0A59;<0A16><0A3C>
+0A5A;<0A17><0A3C>
+0A5B;<0A1C><0A3C>
+0A5E;<0A2B><0A3C>
 =1EB8= (E-dot-below)
 1EC7;<1EB9><0302>
 1EC6;<1EB8><0302>
@@ -480,6 +489,8 @@ for my $txt (@txts) {
 	if (!$locale_keys{$e}) {
 	    $entry .= sprintf $ENT_FMT, $e, $newce, $name if !$eq_rule;
 	    $locale_keys{$e} = $newce;
+	} else {
+	    $entry .= "# already tailored: $_\n";
 	}
 
 	if (!$simpdec && $Keys{$e}) { # duplicate for the decomposition

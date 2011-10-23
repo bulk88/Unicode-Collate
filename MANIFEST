@@ -49,11 +49,16 @@ Collate/Locale/kok.pl		Unicode::Collate::Locale
 Collate/Locale/ln.pl		Unicode::Collate::Locale
 Collate/Locale/lt.pl		Unicode::Collate::Locale
 Collate/Locale/lv.pl		Unicode::Collate::Locale
+Collate/Locale/mk.pl		Unicode::Collate::Locale
+Collate/Locale/ml.pl		Unicode::Collate::Locale
+Collate/Locale/mr.pl		Unicode::Collate::Locale
 Collate/Locale/mt.pl		Unicode::Collate::Locale
 Collate/Locale/nb.pl		Unicode::Collate::Locale
 Collate/Locale/nn.pl		Unicode::Collate::Locale
 Collate/Locale/nso.pl		Unicode::Collate::Locale
 Collate/Locale/om.pl		Unicode::Collate::Locale
+Collate/Locale/or.pl		Unicode::Collate::Locale
+Collate/Locale/pa.pl		Unicode::Collate::Locale
 Collate/Locale/pl.pl		Unicode::Collate::Locale
 Collate/Locale/ro.pl		Unicode::Collate::Locale
 Collate/Locale/ru.pl		Unicode::Collate::Locale
@@ -112,11 +117,16 @@ data/kok.txt		# preparating Unicode::Collate::Locale
 data/ln.txt		# preparating Unicode::Collate::Locale
 data/lt.txt		# preparating Unicode::Collate::Locale
 data/lv.txt		# preparating Unicode::Collate::Locale
+data/mk.txt		# preparating Unicode::Collate::Locale
+data/ml.txt		# preparating Unicode::Collate::Locale
+data/mr.txt		# preparating Unicode::Collate::Locale
 data/mt.txt		# preparating Unicode::Collate::Locale
 data/nb.txt		# preparating Unicode::Collate::Locale
 data/nn.txt		# preparating Unicode::Collate::Locale
 data/nso.txt		# preparating Unicode::Collate::Locale
 data/om.txt		# preparating Unicode::Collate::Locale
+data/or.txt		# preparating Unicode::Collate::Locale
+data/pa.txt		# preparating Unicode::Collate::Locale
 data/pl.txt		# preparating Unicode::Collate::Locale
 data/ro.txt		# preparating Unicode::Collate::Locale
 data/ru.txt		# preparating Unicode::Collate::Locale
@@ -214,11 +224,15 @@ t/loc_ln.t	test Unicode::Collate::Locale
 t/loc_lt.t	test Unicode::Collate::Locale
 t/loc_lv.t	test Unicode::Collate::Locale
 t/loc_mk.t	test Unicode::Collate::Locale
+t/loc_ml.t	test Unicode::Collate::Locale
+t/loc_mr.t	test Unicode::Collate::Locale
 t/loc_mt.t	test Unicode::Collate::Locale
 t/loc_nb.t	test Unicode::Collate::Locale
 t/loc_nn.t	test Unicode::Collate::Locale
 t/loc_nso.t	test Unicode::Collate::Locale
 t/loc_om.t	test Unicode::Collate::Locale
+t/loc_or.t	test Unicode::Collate::Locale
+t/loc_pa.t	test Unicode::Collate::Locale
 t/loc_pl.t	test Unicode::Collate::Locale
 t/loc_ro.t	test Unicode::Collate::Locale
 t/loc_ru.t	test Unicode::Collate::Locale
