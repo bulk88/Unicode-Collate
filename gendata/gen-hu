@@ -12,10 +12,12 @@ use warnings;
 my @a = qw( cs dz dzs gy ly ny sz ty zs );
 
 open my $textf, ">t-hu.txt" or die "t-hu.txt";
+binmode $textf;
 my $text1 = '';
 my $text2 = "#here ccs is identical to cscs etc.\n";
 
 open my $testf, ">t-hu.t" or die "t-hu.t";
+binmode $testf;
 my $test1 = '';
 my $test2 = '';
 

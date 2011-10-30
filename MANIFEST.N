@@ -63,15 +63,23 @@ Collate/Locale/pl.pl		Unicode::Collate::Locale
 Collate/Locale/ro.pl		Unicode::Collate::Locale
 Collate/Locale/ru.pl		Unicode::Collate::Locale
 Collate/Locale/se.pl		Unicode::Collate::Locale
+Collate/Locale/si.pl		Unicode::Collate::Locale
+Collate/Locale/si_dict.pl	Unicode::Collate::Locale
 Collate/Locale/sk.pl		Unicode::Collate::Locale
 Collate/Locale/sl.pl		Unicode::Collate::Locale
 Collate/Locale/sq.pl		Unicode::Collate::Locale
+Collate/Locale/sr.pl		Unicode::Collate::Locale
 Collate/Locale/sv.pl		Unicode::Collate::Locale
+Collate/Locale/sv_refo.pl	Unicode::Collate::Locale
+Collate/Locale/ta.pl		Unicode::Collate::Locale
+Collate/Locale/te.pl		Unicode::Collate::Locale
+Collate/Locale/th.pl		Unicode::Collate::Locale
 Collate/Locale/tn.pl		Unicode::Collate::Locale
 Collate/Locale/to.pl		Unicode::Collate::Locale
 Collate/Locale/tr.pl		Unicode::Collate::Locale
 Collate/Locale/uk.pl		Unicode::Collate::Locale
 Collate/Locale/vi.pl		Unicode::Collate::Locale
+Collate/Locale/wae.pl		Unicode::Collate::Locale
 Collate/Locale/wo.pl		Unicode::Collate::Locale
 Collate/Locale/yo.pl		Unicode::Collate::Locale
 Collate/Locale/zh.pl		Unicode::Collate::Locale
@@ -131,15 +139,23 @@ data/pl.txt		# preparating Unicode::Collate::Locale
 data/ro.txt		# preparating Unicode::Collate::Locale
 data/ru.txt		# preparating Unicode::Collate::Locale
 data/se.txt		# preparating Unicode::Collate::Locale
+data/si.txt		# preparating Unicode::Collate::Locale
+data/si_dict.txt	# preparating Unicode::Collate::Locale
 data/sk.txt		# preparating Unicode::Collate::Locale
 data/sl.txt		# preparating Unicode::Collate::Locale
 data/sq.txt		# preparating Unicode::Collate::Locale
+data/sr.txt		# preparating Unicode::Collate::Locale
 data/sv.txt		# preparating Unicode::Collate::Locale
+data/sv_refo.txt	# preparating Unicode::Collate::Locale
+data/ta.txt		# preparating Unicode::Collate::Locale
+data/te.txt		# preparating Unicode::Collate::Locale
+data/th.txt		# preparating Unicode::Collate::Locale
 data/tn.txt		# preparating Unicode::Collate::Locale
 data/to.txt		# preparating Unicode::Collate::Locale
 data/tr.txt		# preparating Unicode::Collate::Locale
 data/uk.txt		# preparating Unicode::Collate::Locale
 data/vi.txt		# preparating Unicode::Collate::Locale
+data/wae.txt		# preparating Unicode::Collate::Locale
 data/wo.txt		# preparating Unicode::Collate::Locale
 data/yo.txt		# preparating Unicode::Collate::Locale
 data/zh.txt		# preparating Unicode::Collate::Locale
@@ -199,8 +215,8 @@ t/loc_es.t	test Unicode::Collate::Locale
 t/loc_estr.t	test Unicode::Collate::Locale
 t/loc_et.t	test Unicode::Collate::Locale
 t/loc_fi.t	test Unicode::Collate::Locale
-t/loc_fiph.t	test Unicode::Collate::Locale
 t/loc_fil.t	test Unicode::Collate::Locale
+t/loc_fiph.t	test Unicode::Collate::Locale
 t/loc_fo.t	test Unicode::Collate::Locale
 t/loc_fr.t	test Unicode::Collate::Locale
 t/loc_gu.t	test Unicode::Collate::Locale
@@ -237,18 +253,25 @@ t/loc_pl.t	test Unicode::Collate::Locale
 t/loc_ro.t	test Unicode::Collate::Locale
 t/loc_ru.t	test Unicode::Collate::Locale
 t/loc_se.t	test Unicode::Collate::Locale
+t/loc_si.t	test Unicode::Collate::Locale
+t/loc_sidt.t	test Unicode::Collate::Locale
 t/loc_sk.t	test Unicode::Collate::Locale
 t/loc_sl.t	test Unicode::Collate::Locale
 t/loc_sq.t	test Unicode::Collate::Locale
 t/loc_sr.t	test Unicode::Collate::Locale
 t/loc_sv.t	test Unicode::Collate::Locale
+t/loc_svrf.t	test Unicode::Collate::Locale
 t/loc_sw.t	test Unicode::Collate::Locale
+t/loc_ta.t	test Unicode::Collate::Locale
+t/loc_te.t	test Unicode::Collate::Locale
 t/loc_test.t	test Unicode::Collate::Locale
+t/loc_th.t	test Unicode::Collate::Locale
 t/loc_tn.t	test Unicode::Collate::Locale
 t/loc_to.t	test Unicode::Collate::Locale
 t/loc_tr.t	test Unicode::Collate::Locale
 t/loc_uk.t	test Unicode::Collate::Locale
 t/loc_vi.t	test Unicode::Collate::Locale
+t/loc_wae.t	test Unicode::Collate::Locale
 t/loc_wo.t	test Unicode::Collate::Locale
 t/loc_yo.t	test Unicode::Collate::Locale
 t/loc_zh.t	test Unicode::Collate::Locale

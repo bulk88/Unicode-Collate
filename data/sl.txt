@@ -1,4 +1,3 @@
-# c-acute not included
 010D;c+1
 010C;C+1
 0161;s+1

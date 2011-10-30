@@ -17,9 +17,11 @@ my @upp = qw( 41 45 CA 49 4D 4E 4F 55 DC );
 my @tone = qw( 304 301 30C 300 0 );
 
 open my $textf, ">t-zh.txt" or die "t-zh.txt";
+binmode $textf;
 my $text0 = '';
 
 open my $testf, ">t-zh.t" or die "t-zh.t";
+binmode $testf;
 my $test0 = '';
 my $test1 = '';
 my $test2 = '';

@@ -4,7 +4,7 @@ use strict;
 use Carp;
 use base qw(Unicode::Collate);
 
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 
 use File::Spec;
 
@@ -14,31 +14,40 @@ my $PL_EXT  = '.pl';
 my %LocaleFile = map { ($_, $_) } qw(
    af ar as az be bg ca cs cy da eo es et fi fil fo fr gu
    ha haw hi hr hu hy ig is ja kk kl kn ko kok ln lt lv
-   mk ml mr mt nb nn nso om or pa pl ro ru se sk sl sq sv
-   tn to tr uk vi wo yo zh
+   mk ml mr mt nb nn nso om or pa pl ro ru se si sk sl sq
+   sr sv ta te th tn to tr uk vi wae wo yo zh
 );
    $LocaleFile{'default'} = '';
 # aliases
    $LocaleFile{'bs'} = 'hr';
-   $LocaleFile{'sr'} = 'ru';
 # short file names
    $LocaleFile{'de__phonebook'}   = 'de_phone';
    $LocaleFile{'es__traditional'} = 'es_trad';
    $LocaleFile{'fi__phonebook'}   = 'fi_phone';
+   $LocaleFile{'si__dictionary'}  = 'si_dict';
+   $LocaleFile{'sv__reformed'}    = 'sv_refo';
    $LocaleFile{'zh__big5han'}     = 'zh_big5';
    $LocaleFile{'zh__gb2312han'}   = 'zh_gb';
    $LocaleFile{'zh__pinyin'}      = 'zh_pin';
    $LocaleFile{'zh__stroke'}      = 'zh_strk';
+
+my %TypeAlias = qw(
+    phone     phonebook
+    phonebk   phonebook
+    dict      dictionary
+    reform    reformed
+    trad      traditional
+    big5      big5han
+    gb2312    gb2312han
+);
 
 sub _locale {
     my $locale = shift;
     if ($locale) {
 	$locale = lc $locale;
 	$locale =~ tr/\-\ \./_/;
-	$locale =~ s/_phone(?:bk)?\z/_phonebook/;
-	$locale =~ s/_trad\z/_traditional/;
-	$locale =~ s/_big5\z/_big5han/;
-	$locale =~ s/_gb2312\z/_gb2312han/;
+	$locale =~ s/_([0-9a-z]+)\z/$TypeAlias{$1} ?
+				  "_$TypeAlias{$1}" : "_$1"/e;
 	$LocaleFile{$locale} and return $locale;
 
 	my ($l,$t,$v) = split(/_/, $locale.'__');
@@ -142,25 +151,34 @@ pa		2.0 = 1.8.1
 pl		2.0 = 1.8.1
 ro		2.0 (type="standard")
 ru		2.0
-se
-sk
-sl
-sq
-sr
-sv
-tn
-to
-tr
-uk
-vi
-wo
-yo
-zh
-zh__big5han
-zh__gb2312han
-zh__pinyin
-zh__stroke
+se		2.0 (type="standard") = 1.8.1
+si		2.0 (type="standard")
+si__dictionary	2.0 (type="dictionary")
+sk		2.0 (type="standard")
+sl		2.0 = 1.8.1 (type="standard" alt="proposed")
+sq		2.0 = 1.8.1 (alt="proposed" type="standard")
+sr		2.0 (type="standard")
+sv		2.0 (type="standard")
+sv__reformed	2.0 = 1.8.1 (type="reformed")
+ta		2.0
+te		2.0
+th		2.0 (type="standard")
+tn		2.0 = 1.8.1
+to		2.0 = 1.8.1
+tr		2.0 = 1.8.1 (type="standard")
+uk		2.0
+vi		2.0 = 1.8.1
+wae		2.0
+wo		1.8.1
+yo		2.0 = 1.8.1
+zh		2.0 = 1.8.1 (type="standard")
+zh__big5han	2.0 = 1.8.1 (type="big5han")
+zh__gb2312han	2.0 = 1.8.1 (type="gb2312han")
+zh__pinyin	2.0 (type='pinyin' alt='short') [*]
+zh__stroke	2.0 = 1.9.1 (type='stroke' alt='short') [*]
 ----------------------------------------------------------------------------
+ [*] tailored latin letters and unified ideographs only.
+     omitted the tailoring for some characters with tertiary diff.
 
 =head1 NAME
 
@@ -319,16 +337,23 @@ this method returns a string C<'default'> meaning no special tailoring.
       ro                Romanian
       ru                Russian
       se                Northern Sami
+      si                Sinhala
+      si__dictionary    Sinhala (U+0DA5 = U+0DA2,0DCA,0DA4)
       sk                Slovak
       sl                Slovenian
       sq                Albanian
       sr                Serbian
-      sv                Swedish
+      sv                Swedish (v and w are primary equal)
+      sv__reformed      Swedish (v and w as separate characters)
+      ta                Tamil
+      te                Telugu
+      th                Thai
       tn                Tswana
       to                Tonga
       tr                Turkish
       uk                Ukrainian
       vi                Vietnamese
+      wae               Walser
       wo                Wolof
       yo                Yoruba
       zh                Chinese

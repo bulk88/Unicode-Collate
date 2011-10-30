@@ -15,10 +15,12 @@ use Unicode::Normalize;
 require 'dumpstr';
 
 open my $textf, ">t-ja.txt" or die "t-ja.txt";
+binmode $textf;
 my $text1 = "#hiragana\n";
 my $text2 = "#fullwidth and halfwidth\n";
 
 open my $testf, ">t-ja.t" or die "t-ja.t";
+binmode $testf;
 my $test1 = '';
 my $test2 = '';
 my $test3 = '';
@@ -125,6 +127,7 @@ $vowel{$_} = '30A7' for @vowE; # 19
 $vowel{$_} = '30A9' for @vowO; # 21
 	      # not for @vowN;
 open my $testp, ">t-japr.t" or die "t-japr.t";
+binmode $testp;
 
 my $textP = "#prolonged\n";
 my $testP = "";
@@ -230,6 +233,7 @@ my %VoiceableKana = map +($_=>1), qw(
     30C4 30C6 30C8 30CF 30D2 30D5 30D8 30DB 30EF 30F0 30F1 30F2
 );
 open my $testi, ">t-jait.t" or die "t-jait.t";
+binmode $testi;
 
 my $textI = "#iteration\n";
 my $testI = "";

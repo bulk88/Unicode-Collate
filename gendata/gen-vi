@@ -17,10 +17,12 @@ my @base = qw( 61 41 103 102 E2 C2 65 45 EA CA 69 49 6F 4F
 my @tone = qw( 300 340 309 303 301 341 323 );
 
 open my $textf, ">t-vi.txt" or die "t-vi.txt";
+binmode $textf;
 my $text1 = "#equivalent sequences\n";
 my $text2 = '';
 
 open my $testf, ">t-vi.t" or die "t-vi.t";
+binmode $testf;
 my $test0 = '';
 my $test1 = '';
 my $test2 = '';

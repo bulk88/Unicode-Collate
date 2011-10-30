@@ -102,4 +102,4 @@ overrideCJK \&Unicode::Collate::CJK::Pinyin::weightPinyin
 00DC 0340;<01DB>
 00FC;u++5
 00DC;U++5
-3007;[.A3E5.20.2.3007]
+3007;[.A3F6.20.2.3007]

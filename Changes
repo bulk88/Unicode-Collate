@@ -1,5 +1,13 @@
 Revision history for Perl module Unicode::Collate.
 
+0.82  Sun Oct 30 10:03:48 2011
+    - U::C::Locale newly supports locales: si, si__dictionary,
+      sv__reformed, ta, te, th, wae.
+    - added loc_si.t, loc_sidt.t, loc_svrf.t, loc_ta.t, loc_te.t,
+      loc_th.t, loc_wae.t in t.
+    - updated some locales to CLDR 2.0 : sk, sr, sv, uk.
+    - updated CJK/Pinyin.pm according to CLDR 2.0.
+
 0.81  Sun Oct 23 21:32:36 2011
     - U::C::Locale newly supports locales: ml, mr, or, pa.
     - added loc_ml.t, loc_mr.t, loc_or.t, loc_pa.t in t.
