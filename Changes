@@ -1,5 +1,11 @@
 Revision history for Perl module Unicode::Collate.
 
+0.83  Sun Oct 30 20:22:04 2011
+    - mklocale: auto-generate equivalents for suppressed contractions.
+      * be.txt, bg.txt, kk.txt, mk.txt, ru.txt, sr.txt, uk.txt in data
+        are simplified.
+      * but no Locale/*.pl will be modified.
+
 0.82  Sun Oct 30 10:03:48 2011
     - U::C::Locale newly supports locales: si, si__dictionary,
       sv__reformed, ta, te, th, wae.

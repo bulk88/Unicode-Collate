@@ -338,7 +338,7 @@ for my $o (@OtherEquiv) {
 	push @{ $Equiv{$k} }, $e if exists $Code{$k};
 
 	$Keys{$e} = $k;
-	$Code{$k} = $e;
+	$Code{$k} = $e if !exists $Code{$k};
 	$Name{$e} = $name;
 
 	if ($e =~ /^11[0-9A-F]{2}\z/) { # Hangul Jamo (modern only)
@@ -351,6 +351,18 @@ for my $o (@OtherEquiv) {
 	}
     }
     close $fh;
+}
+
+# $Code{$k} : precomposite (such as 04D1, CYRILLIC SMALL LETTER A WITH BREVE)
+# $eqs      : equivalent sequence (such as <0430><0306>)
+# $starter  : starter codepoint (integer such as hex '0430')
+my @Contractions; # store Cyrillic, currently required, and others.
+for my $k (sort keys %Equiv) {
+    if ($Code{$k} !~ / / && $Equiv{$k}[0] =~ / /) {
+	(my $eqs = "<$Equiv{$k}[0]>") =~ s/ /></g;
+	my $starter = $eqs =~ /^<([0-9A-Fa-f]+)>/ ? hex($1) : '';
+	push @Contractions, [$starter, "$Code{$k};$eqs"];
+    }
 }
 
 ##### Korean.pm #####
@@ -480,61 +492,23 @@ for my $txt (@txts) {
 	    next;
 	}
 
-	my($e,$rule) = split_e_rule($_);
-	my $name = getname($e);
-	my $eq_rule = $rule eq '=';
-	$rule = join '', map "<$_>", split ' ', $e if $eq_rule;
-	my ($newce, $simpdec) = parserule($e, $rule, \%locale_keys);
+	$entry .= parse_entry($_, \%locale_keys);
+    }
 
-	if (!$locale_keys{$e}) {
-	    $entry .= sprintf $ENT_FMT, $e, $newce, $name if !$eq_rule;
-	    $locale_keys{$e} = $newce;
-	} else {
-	    $entry .= "# already tailored: $_\n";
-	}
+    # precomposites to be suppressed as additional equivalents
+    if ($ptxt =~ /suppress => \[(.*)\]/s) {
+	my @suplist = eval $1;
+	my %suppressed;
+	@suppressed{@suplist} = (1) x @suplist;
 
-	if (!$simpdec && $Keys{$e}) { # duplicate for the decomposition
-	    my $key = $Keys{$e};
-	    my @ce = $key =~ /$RE_CE/go;
-	    if (@ce > 1) {
-		my $ok = 1;
-		my $ee = '';
-		for my $c (@ce) {
-		    $ok = 0, last if !$Code{$c};
-		    $ee .= ' ' if $ee ne '';
-		    $ee .= $Code{$c};
-		}
-		if ($ok && !$locale_keys{$ee}) {
-		    $entry .= sprintf $ENT_FMT, $ee, $newce, $name;
-		    $locale_keys{$ee} = $newce;
-		}
-		if ($ee =~ s/ 030([01])/ 034$1/ &&
-		    $ok && !$locale_keys{$ee}) {
-		    $entry .= sprintf $ENT_FMT, $ee, $newce, $name;
-		    $locale_keys{$ee} = $newce;
-		}
-	    }
-	    if ($Equiv{$key}) {
-		for my $eq (@{ $Equiv{$key} }) {
-		    next if $locale_keys{$eq};
-		    $entry .= sprintf $ENT_FMT, $eq, $newce, $Name{$eq};
-		    $locale_keys{$eq} = $newce;
-		}
-	    }
-	}
-
-	if ($OtherEquiv{$e}) {
-	    for my $o (@{ $OtherEquiv{$e} }) {
-		my($e,$rule) = split_e_rule($o);
-		my $name = getname($e);
-		(my $newce, undef) = parserule($e, $rule, \%locale_keys);
-		if (!$locale_keys{$e}) {
-		    $entry .= sprintf $ENT_FMT, $e, $newce, $name;
-		    $locale_keys{$e} = $newce;
-		}
-	    }
+	for my $contract (@Contractions) {
+	    my $starter = $contract->[0];
+	    my $addline = $contract->[1];
+	    next if ! $suppressed{$starter};
+	    $entry .= parse_entry($addline, \%locale_keys);
 	}
     }
+
     if ($entry) {
 	my $v = $vDUCET ? " # for DUCET v$vDUCET" : '';
 	$ptxt .= "   entry => <<'ENTRY',$v\n";
@@ -545,6 +519,70 @@ for my $txt (@txts) {
     print $ph "+{\n$ptxt};\n";
     close $fh;
     close $ph;
+}
+
+sub parse_entry {
+    my $line = shift;
+    my $lockeys = shift;
+
+    my($e,$rule) = split_e_rule($line);
+    my $name = getname($e);
+    my $eq_rule = $rule eq '=';
+    $rule = join '', map "<$_>", split ' ', $e if $eq_rule;
+    my ($newce, $simpdec) = parse_rule($e, $rule, $lockeys);
+
+    my $newentry = '';
+
+    if (!$lockeys->{$e}) {
+	$newentry .= sprintf $ENT_FMT, $e, $newce, $name if !$eq_rule;
+	$lockeys->{$e} = $newce;
+    } else {
+	$newentry .= "# already tailored: $_\n";
+    }
+
+    if (!$simpdec && $Keys{$e}) { # duplicate for the decomposition
+	my $key = $Keys{$e};
+	my @ce = $key =~ /$RE_CE/go;
+	if (@ce > 1) {
+	    my $ok = 1;
+	    my $ee = '';
+	    for my $c (@ce) {
+		$ok = 0, last if !$Code{$c};
+		$ee .= ' ' if $ee ne '';
+		$ee .= $Code{$c};
+	    }
+	    if ($ok && !$lockeys->{$ee}) {
+		$newentry .= sprintf $ENT_FMT, $ee, $newce, $name;
+		$lockeys->{$ee} = $newce;
+	    }
+	    if ($ee =~ s/ 030([01])/ 034$1/ &&
+		$ok && !$lockeys->{$ee}) {
+		$newentry .= sprintf $ENT_FMT, $ee, $newce, $name;
+		$lockeys->{$ee} = $newce;
+	    }
+	}
+	if ($Equiv{$key}) {
+	    for my $eq (@{ $Equiv{$key} }) {
+		next if $lockeys->{$eq};
+		$newentry .= sprintf $ENT_FMT, $eq, $newce, $Name{$eq};
+		$lockeys->{$eq} = $newce;
+	    }
+	}
+    }
+
+    if ($OtherEquiv{$e}) {
+	for my $o (@{ $OtherEquiv{$e} }) {
+	    my($e,$rule) = split_e_rule($o);
+	    my $name = getname($e);
+	    (my $newce, undef) = parse_rule($e, $rule, $lockeys);
+	    if (!$lockeys->{$e}) {
+		$newentry .= sprintf $ENT_FMT, $e, $newce, $name;
+		$lockeys->{$e} = $newce;
+	    }
+	}
+    }
+
+    return $newentry;
 }
 
 sub getunicode {
@@ -575,7 +613,7 @@ sub getname {
     return sprintf '<%s>', join ', ', @name;
 }
 
-sub parserule {
+sub parse_rule {
     (my $e   = shift) =~ s/ .*\z//;
     my $rule = shift;
     my $lockeys = shift;
