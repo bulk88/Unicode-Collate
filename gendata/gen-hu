@@ -3,21 +3,19 @@
 #
 # output files
 #
-#   t-hu.txt (a main part of data/hu.txt)
-#   t-hu.t   (a main part of t/loc_hu.t)
+#   hu.txt   (a main part of data/hu.txt)
+#   loc_hu.t (a main part of t/loc_hu.t)
 #
 use strict;
 use warnings;
+require 'gen-head'; # for testcount() and testhead()
 
 my @a = qw( cs dz dzs gy ly ny sz ty zs );
 
-open my $textf, ">t-hu.txt" or die "t-hu.txt";
-binmode $textf;
+my $textf = 'hu.txt';
 my $text1 = '';
 my $text2 = "#here ccs is identical to cscs etc.\n";
-
-open my $testf, ">t-hu.t" or die "t-hu.t";
-binmode $testf;
+my $testf = 'loc_hu.t';
 my $test1 = '';
 my $test2 = '';
 
@@ -65,41 +63,36 @@ for my $e (@a) {
     }
 }
 
-print $textf "$text1$text2";
-close $textf or die '$textf';
 
-#------
-my $count1 = $test1 =~ s/->eq/->eq/g;
-my $count2 = $test2 =~ s/->eq/->eq/g;
+### WRITE DATA ###
+open my $dh, ">$textf" or die $textf;
+binmode $dh;
+print $dh "$text1$text2";
+close $dh or die $textf;
 
-my $test_count = 34;
-print $testf "\n# $test_count\n\n";
+### WRITE TEST ###
+my $test = '';
+my $ok = 0;
 
-print $testf "\$objHu->change(level => 2);\n\n";
-print $testf $test1;
-$test_count += $count1;
-print $testf "\n# $test_count\n\n";
+$test .= "\$objHu->change(level => 1);\n\n";
+$test .= testcount(\$ok, 34);
 
-$test_count += 6;
-print $testf "\n# $test_count\n\n";
+$test .= "\$objHu->change(level => 2);\n\n";
+$test .= testcount(\$ok, $test1);
+$test .= testcount(\$ok, 6);
 
 $test1 =~ s/->eq/->lt/g;
-print $testf "\$objHu->change(level => 3);\n\n";
-print $testf $test1;
-$test_count += $count1;
-print $testf "\n# $test_count\n\n";
-
-$test_count += 22;
-print $testf "\n# $test_count\n\n";
-
-print $testf $test2;
-$test_count += $count2;
-print $testf "\n# $test_count\n\n";
+$test .= "\$objHu->change(level => 3);\n\n";
+$test .= testcount(\$ok, $test1);
+$test .= testcount(\$ok, 22);
+$test .= testcount(\$ok, $test2);
 
 $test1 =~ s/->lt/->gt/g;
-print $testf "\$objHu->change(upper_before_lower => 1);\n\n";
-print $testf $test1;
-$test_count += $count1;
-print $testf "\n# $test_count\n";
+$test .= "\$objHu->change(upper_before_lower => 1);\n\n";
+$test .= testcount(\$ok, $test1);
 
-close $testf or die '$testf';
+chomp $test;
+open my $th, ">$testf" or die $testf;
+binmode $th;
+print $th testhead('hu', $ok), $test;
+close $th or die $testf;

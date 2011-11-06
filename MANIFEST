@@ -26,6 +26,7 @@ Collate/Locale/eo.pl		Unicode::Collate::Locale
 Collate/Locale/es.pl		Unicode::Collate::Locale
 Collate/Locale/es_trad.pl	Unicode::Collate::Locale
 Collate/Locale/et.pl		Unicode::Collate::Locale
+Collate/Locale/fa.pl		Unicode::Collate::Locale
 Collate/Locale/fi.pl		Unicode::Collate::Locale
 Collate/Locale/fi_phone.pl	Unicode::Collate::Locale
 Collate/Locale/fil.pl		Unicode::Collate::Locale
@@ -78,6 +79,7 @@ Collate/Locale/tn.pl		Unicode::Collate::Locale
 Collate/Locale/to.pl		Unicode::Collate::Locale
 Collate/Locale/tr.pl		Unicode::Collate::Locale
 Collate/Locale/uk.pl		Unicode::Collate::Locale
+Collate/Locale/ur.pl		Unicode::Collate::Locale
 Collate/Locale/vi.pl		Unicode::Collate::Locale
 Collate/Locale/wae.pl		Unicode::Collate::Locale
 Collate/Locale/wo.pl		Unicode::Collate::Locale
@@ -102,6 +104,7 @@ data/eo.txt		# preparating Unicode::Collate::Locale
 data/es.txt		# preparating Unicode::Collate::Locale
 data/es_trad.txt	# preparating Unicode::Collate::Locale
 data/et.txt		# preparating Unicode::Collate::Locale
+data/fa.txt		# preparating Unicode::Collate::Locale
 data/fi.txt		# preparating Unicode::Collate::Locale
 data/fi_phone.txt	# preparating Unicode::Collate::Locale
 data/fil.txt		# preparating Unicode::Collate::Locale
@@ -154,6 +157,7 @@ data/tn.txt		# preparating Unicode::Collate::Locale
 data/to.txt		# preparating Unicode::Collate::Locale
 data/tr.txt		# preparating Unicode::Collate::Locale
 data/uk.txt		# preparating Unicode::Collate::Locale
+data/ur.txt		# preparating Unicode::Collate::Locale
 data/vi.txt		# preparating Unicode::Collate::Locale
 data/wae.txt		# preparating Unicode::Collate::Locale
 data/wo.txt		# preparating Unicode::Collate::Locale
@@ -166,10 +170,13 @@ data/zh_strk.txt	# preparating Unicode::Collate::Locale
 disableXS	# perl script to disable XSUB
 enableXS	# perl script to enable XSUB
 gendata/dumpstr		# preparating Unicode::Collate::Locale
+gendata/gen-head	# preparating Unicode::Collate::Locale
 gendata/gen-hu		# preparating Unicode::Collate::Locale
 gendata/gen-ja		# preparating Unicode::Collate::Locale
+gendata/gen-tcyr	# preparating Unicode::Collate::Locale
 gendata/gen-vi		# preparating Unicode::Collate::Locale
 gendata/gen-zh		# preparating Unicode::Collate::Locale
+gendata/gen-zh2		# preparating Unicode::Collate::Locale
 Makefile.PL
 MANIFEST	MANIFEST for XSUB
 MANIFEST.N	# MANIFEST for NoXSUB (pure perl)
@@ -214,6 +221,7 @@ t/loc_eo.t	test Unicode::Collate::Locale
 t/loc_es.t	test Unicode::Collate::Locale
 t/loc_estr.t	test Unicode::Collate::Locale
 t/loc_et.t	test Unicode::Collate::Locale
+t/loc_fa.t	test Unicode::Collate::Locale
 t/loc_fi.t	test Unicode::Collate::Locale
 t/loc_fil.t	test Unicode::Collate::Locale
 t/loc_fiph.t	test Unicode::Collate::Locale
@@ -259,6 +267,7 @@ t/loc_sk.t	test Unicode::Collate::Locale
 t/loc_sl.t	test Unicode::Collate::Locale
 t/loc_sq.t	test Unicode::Collate::Locale
 t/loc_sr.t	test Unicode::Collate::Locale
+t/loc_srla.t	test Unicode::Collate::Locale
 t/loc_sv.t	test Unicode::Collate::Locale
 t/loc_svrf.t	test Unicode::Collate::Locale
 t/loc_sw.t	test Unicode::Collate::Locale
@@ -270,6 +279,7 @@ t/loc_tn.t	test Unicode::Collate::Locale
 t/loc_to.t	test Unicode::Collate::Locale
 t/loc_tr.t	test Unicode::Collate::Locale
 t/loc_uk.t	test Unicode::Collate::Locale
+t/loc_ur.t	test Unicode::Collate::Locale
 t/loc_vi.t	test Unicode::Collate::Locale
 t/loc_wae.t	test Unicode::Collate::Locale
 t/loc_wo.t	test Unicode::Collate::Locale

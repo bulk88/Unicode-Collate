@@ -3,11 +3,12 @@
 #
 # output files
 #
-#   t-vi.txt (a main part of data/vi.txt)
-#   t-vi.t   (a main part of t/loc_vi.t)
+#   vi.txt   (a main part of data/vi.txt)
+#   loc_vi.t (a main part of t/loc_vi.t)
 #
 use strict;
 use warnings;
+require 'gen-head'; # for testcount() and testhead()
 
 use Unicode::Normalize;
 require 'dumpstr';
@@ -16,13 +17,10 @@ my @base = qw( 61 41 103 102 E2 C2 65 45 EA CA 69 49 6F 4F
 	       F4 D4 1A1 1A0 75 55 1B0 1AF 79 59 );
 my @tone = qw( 300 340 309 303 301 341 323 );
 
-open my $textf, ">t-vi.txt" or die "t-vi.txt";
-binmode $textf;
+my $textf = 'vi.txt';
 my $text1 = "#equivalent sequences\n";
 my $text2 = '';
-
-open my $testf, ">t-vi.t" or die "t-vi.t";
-binmode $testf;
+my $testf = 'loc_vi.t';
 my $test0 = '';
 my $test1 = '';
 my $test2 = '';
@@ -67,33 +65,25 @@ for my $b (@base) {
     }
 }
 
-print $textf "$text1$text2";
-close $textf or die '$textf';
+### WRITE DATA ###
+open my $dh, ">$textf" or die $textf;
+binmode $dh;
+print $dh "$text1$text2";
+close $dh or die $textf;
 
-#------
+### WRITE TEST ###
+my $test = '';
+my $ok = 0;
 
-my $count0 = $test0 =~ s/->eq/->eq/g;
-my $count1 = $test1 =~ s/->eq/->eq/g;
-my $count2 = $test2 =~ s/->eq/->eq/g;
-my $count3 = $test3 =~ s/->eq/->eq/g;
+$test .= testcount(\$ok, 74);
+$test .= testcount(\$ok, $test0);
+$test .= testcount(\$ok, $test1);
+$test .= testcount(\$ok, $test2);
+$test .= testcount(\$ok, $test3);
+$test .= testcount(\$ok, 26);
 
-my $test_count = 74;
-print $testf "\n# $test_count\n\n";
-
-print $testf $test0;
-$test_count += $count0;
-print $testf "\n# $test_count\n\n";
-
-print $testf $test1;
-$test_count += $count1;
-print $testf "\n# $test_count\n\n";
-
-print $testf $test2;
-$test_count += $count2;
-print $testf "\n# $test_count\n\n";
-
-print $testf $test3;
-$test_count += $count3;
-print $testf "\n# $test_count\n\n";
-
-close $testf or die '$testf';
+chomp $test;
+open my $th, ">$testf" or die $testf;
+binmode $th;
+print $th testhead('vi', $ok), $test;
+close $th or die $testf;

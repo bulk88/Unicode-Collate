@@ -3,24 +3,23 @@
 #
 # output files
 #
-#   t-ja.txt (a main part of data/ja.txt)
-#   t-ja.t   (a main part of t/loc_ja.t)
-#   t-japr.t (a main part of t/loc_japr.t)
-#   t-jait.t (a main part of t/loc_jait.t)
+#   ja.txt     (equal to data/ja.txt)
+#   loc_ja.t   (almost part of t/loc_ja.t)
+#   loc_japr.t (equal to t/loc_japr.t)
+#   loc_jait.t (equal to t/loc_jait.t)
 #
 use strict;
 use warnings;
+require 'gen-head'; # for testcount() and testhead()
 
 use Unicode::Normalize;
 require 'dumpstr';
 
-open my $textf, ">t-ja.txt" or die "t-ja.txt";
-binmode $textf;
+my $textf = 'ja.txt';
 my $text1 = "#hiragana\n";
 my $text2 = "#fullwidth and halfwidth\n";
 
-open my $testf, ">t-ja.t" or die "t-ja.t";
-binmode $testf;
+my $testf = 'loc_ja.t';
 my $test1 = '';
 my $test2 = '';
 my $test3 = '';
@@ -69,41 +68,35 @@ for my $u (0x3000, 0xFF00..0xFF9F, 0xFFE0..0xFFFD) {
     $test2 .= qq|ok(\$objJa->eq($ustr, $kstr));\n|;
 }
 
-print $textf "$text1$text2";
+### WRITE TEST ###
+my $test = '';
+my $ok = 0;
 
-my $count1 = $test1 =~ s/->eq/->eq/g;
-my $count2 = $test2 =~ s/->eq/->eq/g;
-my $count3 = $test3 =~ s/->eq/->eq/g;
+$test .= "\$objJa->change(level => 1);\n\n";
+$test .= testcount(\$ok, 22);
 
-my $test_count = 32;
-print $testf "\n# $test_count\n\n";
+$test .= "\$objJa->change(overrideCJK => undef);\n\n";
+$test .= testcount(\$ok, 10);
 
-print $testf "\$objJa->change(level => 3);\n\n";
-print $testf $test1;
-$test_count += $count1;
-print $testf "\n# $test_count\n\n";
+$test .= "\$objJa->change(level => 3);\n\n";
+$test .= testcount(\$ok, $test1);
 
-print $testf "\$objJa->change(variable => 'Non-ignorable');\n\n";
-print $testf $test2;
-$test_count += $count2;
-print $testf "\n# $test_count\n\n";
+$test .= "\$objJa->change(variable => 'Non-ignorable');\n\n";
+$test .= testcount(\$ok, $test2);
 
 $test1 =~ s/->eq/->lt/g;
-print $testf "\$objJa->change(level => 4);\n\n";
-print $testf $test1;
-$test_count += $count1;
-print $testf "\n# $test_count\n\n";
+$test .= "\$objJa->change(level => 4);\n\n";
+$test .= testcount(\$ok, $test1);
+$test .= testcount(\$ok, $test3);
 
-print $testf $test3;
-$test_count += $count3;
-print $testf "\n# $test_count\n\n";
+$test .= "\$objJa->change(katakana_before_hiragana => 1);\n\n";
+$test .= testcount(\$ok, $test1);
 
-print $testf "\$objJa->change(katakana_before_hiragana => 1);\n\n";
-print $testf $test1;
-$test_count += $count1;
-print $testf "\n# $test_count\n";
-
-close $testf or die '$testf';
+chomp $test;
+open my $th, ">$testf" or die $testf;
+binmode $th;
+print $th testhead('ja', $ok), $test;
+close $th or die $testf;
 
 #------------------------------------------------------------------------------
 
@@ -126,8 +119,6 @@ $vowel{$_} = '30A5' for @vowU; # 24
 $vowel{$_} = '30A7' for @vowE; # 19
 $vowel{$_} = '30A9' for @vowO; # 21
 	      # not for @vowN;
-open my $testp, ">t-japr.t" or die "t-japr.t";
-binmode $testp;
 
 my $textP = "#prolonged\n";
 my $testP = "";
@@ -182,42 +173,30 @@ for my $hex (@vowA, @vowI, @vowU, @vowE, @vowO) {
     $testR .= qq|ok(\$objJa->eq($hira_prolong, $hira_prolongD));\n|;
 }
 
-print $textf $textP;
+### WRITE TEST PROLONG ###
+$test = '';
+$ok = 2;
 
-my $countP = $testP =~ s/->eq/->eq/g;
-my $countQ = $testQ =~ s/->eq/->eq/g;
-my $countR = $testR =~ s/->eq/->eq/g;
-
-$test_count = 2;
-
-print $testp "\$objJa->change(level => 2);\n\n";
-print $testp $testP;
-$test_count += $countP;
-print $testp "\n# $test_count\n\n";
+$test .= "\$objJa->change(level => 2);\n\n";
+$test .= testcount(\$ok, $testP);
 
 $testP =~ s/->eq/->lt/g;
-print $testp "\$objJa->change(level => 3);\n\n";
-print $testp $testP;
-$test_count += $countP;
-print $testp "\n# $test_count\n\n";
-
-print $testp $testQ;
-$test_count += $countQ;
-print $testp "\n# $test_count\n\n";
-
-print $testp "\$objJa->change(level => 4);\n\n";
-print $testp "\$objJa->change(variable => 'Non-ignorable');\n\n";
+$test .= "\$objJa->change(level => 3);\n\n";
+$test .= testcount(\$ok, $testP);
+$test .= testcount(\$ok, $testQ);
 
 $testQ =~ s/->eq/->lt/g;
-print $testp $testQ;
-$test_count += $countQ;
-print $testp "\n# $test_count\n\n";
+$test .= "\$objJa->change(level => 4);\n\n";
+$test .= "\$objJa->change(variable => 'Non-ignorable');\n\n";
+$test .= testcount(\$ok, $testQ);
+$test .= testcount(\$ok, $testR);
 
-print $testp $testR;
-$test_count += $countR;
-print $testp "\n# $test_count\n";
-
-close $testp or die '$testp';
+$testf =~ s/\./pr./;
+chomp $test;
+open my $ph, ">$testf" or die $testf;
+binmode $ph;
+print $ph testhead('ja', $ok), $test;
+close $ph or die $testf;
 
 #------------------------------------------------------------------------------
 
@@ -232,8 +211,6 @@ my %VoiceableKana = map +($_=>1), qw(
     30A6 30AB 30AD 30AF 30B1 30B3 30B5 30B7 30B9 30BB 30BD 30BF 30C1
     30C4 30C6 30C8 30CF 30D2 30D5 30D8 30DB 30EF 30F0 30F1 30F2
 );
-open my $testi, ">t-jait.t" or die "t-jait.t";
-binmode $testi;
 
 my $textI = "#iteration\n";
 my $testI = "";
@@ -312,42 +289,38 @@ for my $hex (sort @vowA, @vowI, @vowU, @vowE, @vowO, @vowN) {
     $testK .= qq|ok(\$objJa->eq($hira_iterateVD, $hira_iterateD.\$vs));\n|;
 }
 
-print $textf $textI;
-close $textf or die '$textf';
+### WRITE TEST ITERATION ###
+$test = '';
+$ok = 2;
 
-my $countI = $testI =~ s/->eq/->eq/g;
-my $countJ = $testJ =~ s/->eq/->eq/g;
-my $countK = $testK =~ s/->eq/->eq/g;
-
-$test_count = 2;
-
-print $testi "\$objJa->change(level => 2);\n\n";
-print $testi $testI;
-$test_count += $countI;
-print $testi "\n# $test_count\n\n";
+$test .= "\$objJa->change(level => 2);\n\n";
+$test .= testcount(\$ok, $testI);
 
 $testI =~ s/->eq/->lt/g;
-print $testi "\$objJa->change(level => 3);\n\n";
-print $testi $testI;
-$test_count += $countI;
-print $testi "\n# $test_count\n\n";
-
-print $testi $testJ;
-$test_count += $countJ;
-print $testi "\n# $test_count\n\n";
-
-print $testi "\$objJa->change(level => 4);\n\n";
-print $testi "\$objJa->change(variable => 'Non-ignorable');\n\n";
+$test .= "\$objJa->change(level => 3);\n\n";
+$test .= testcount(\$ok, $testI);
+$test .= testcount(\$ok, $testJ);
 
 $testJ =~ s/->eq/->lt/g;
-print $testi $testJ;
-$test_count += $countJ;
-print $testi "\n# $test_count\n\n";
+$test .= "\$objJa->change(level => 4);\n\n";
+$test .= "\$objJa->change(variable => 'Non-ignorable');\n\n";
+$test .= testcount(\$ok, $testJ);
 
-print $testi qq|my \$vs = "\\x{$HexVS}";\n\n|;
+$test .= qq|my \$vs = "\\x{$HexVS}";\n\n|;
+$test .= testcount(\$ok, $testK);
 
-print $testi $testK;
-$test_count += $countK;
-print $testi "\n# $test_count\n";
+$testf =~ s/pr\./it./;
+chomp $test;
+open my $ih, ">$testf" or die $testf;
+binmode $ih;
+print $ih testhead('ja', $ok), $test;
+close $ih or die $testf;
 
-close $testi or die '$testi';
+### WRITE DATA ###
+open my $dh, ">$textf" or die $textf;
+binmode $dh;
+print $dh "use Unicode::Collate::CJK::JISX0208\n";
+print $dh "overrideCJK \\&Unicode::Collate::CJK::JISX0208::weightJISX0208\n";
+print $dh "$text1$text2";
+print $dh "$textP$textI";
+close $dh or die $textf;

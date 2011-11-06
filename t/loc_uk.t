@@ -12,7 +12,7 @@ BEGIN {
 }
 
 use Test;
-BEGIN { plan tests => 206 };
+BEGIN { plan tests => 208 };
 
 use strict;
 use warnings;
@@ -29,11 +29,10 @@ ok($objUk->getlocale, 'uk');
 
 $objUk->change(level => 1);
 
-ok($objUk->lt("\x{433}", "\x{491}"));
-ok($objUk->gt("\x{434}", "\x{491}"));
-
-ok($objUk->lt("\x{44F}", "\x{44C}"));
-ok($objUk->gt("\x{519}", "\x{44C}"));
+ok($objUk->gt("\x{491}", "\x{433}"));
+ok($objUk->lt("\x{491}", "\x{434}"));
+ok($objUk->gt("\x{44C}", "\x{44F}"));
+ok($objUk->lt("\x{44C}", "\x{519}"));
 
 # 6
 
@@ -217,3 +216,10 @@ for my $i ("", "\0") {
 }
 
 # 206
+
+$objUk->change(upper_before_lower => 1);
+
+ok($objUk->gt("\x{491}", "\x{490}"));
+ok($objUk->gt("\x{44C}", "\x{42C}"));
+
+# 208

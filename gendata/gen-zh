@@ -3,11 +3,12 @@
 #
 # output files
 #
-#   t-zh.txt (the whole data/zh.txt)
-#   t-zh.t   (a main part of t/loc_zh.t)
+#   zh.txt   (equal to data/zh.txt)
+#   loc_zh.t (a main part of t/loc_zh.t)
 #
 use strict;
 use warnings;
+require 'gen-head'; # for testcount() and testhead()
 
 use Unicode::Normalize;
 require 'dumpstr';
@@ -16,12 +17,9 @@ my @low = qw( 61 65 EA 69 6D 6E 6F 75 FC );
 my @upp = qw( 41 45 CA 49 4D 4E 4F 55 DC );
 my @tone = qw( 304 301 30C 300 0 );
 
-open my $textf, ">t-zh.txt" or die "t-zh.txt";
-binmode $textf;
+my $textf = 'zh.txt';
 my $text0 = '';
-
-open my $testf, ">t-zh.t" or die "t-zh.t";
-binmode $testf;
+my $testf = 'loc_zh.t';
 my $test0 = '';
 my $test1 = '';
 my $test2 = '';
@@ -89,43 +87,32 @@ for my $i (0..@low-1) {
     }
 }
 
-print $textf $text0;
-close $textf or die '$textf';
+### WRITE DATA ###
+open my $dh, ">$textf" or die $textf;
+binmode $dh;
+print $dh $text0;
+close $dh or die $textf;
 
-#------
+### WRITE TEST ###
+my $test = '';
+my $ok = 2;
 
-my $count0 = $test0 =~ s/->eq/->eq/g;
-my $count1 = $test1 =~ s/->eq/->eq/g;
-my $count2 = $test2 =~ s/->eq/->eq/g;
-
-my $test_count = 2;
-print $testf "\n";
-print $testf "\$objZh->change(level => 1);\n\n";
-
-print $testf $test0;
-$test_count += $count0;
-print $testf "\n# $test_count\n\n";
-
-print $testf "\$objZh->change(level => 2);\n\n";
+$test .= "\$objZh->change(level => 1);\n\n";
+$test .= testcount(\$ok, $test0);
 
 $test0 =~ s/->eq/->lt/g;
-print $testf $test0;
-$test_count += $count0;
-print $testf "\n# $test_count\n\n";
-
-print $testf $test1;
-$test_count += $count1;
-print $testf "\n# $test_count\n\n";
-
-print $testf "\$objZh->change(level => 3);\n\n";
+$test .= "\$objZh->change(level => 2);\n\n";
+$test .= testcount(\$ok, $test0);
+$test .= testcount(\$ok, $test1);
 
 $test1 =~ s/->eq/->lt/g;
-print $testf $test1;
-$test_count += $count1;
-print $testf "\n# $test_count\n\n";
+$test .= "\$objZh->change(level => 3);\n\n";
+$test .= testcount(\$ok, $test1);
+$test .= testcount(\$ok, $test2);
+$test .= testcount(\$ok, 6);
 
-print $testf $test2;
-$test_count += $count2;
-print $testf "\n# $test_count\n\n";
-
-close $testf or die '$testf';
+chomp $test;
+open my $th, ">$testf" or die $testf;
+binmode $th;
+print $th testhead('zh', $ok), $test;
+close $th or die $testf;

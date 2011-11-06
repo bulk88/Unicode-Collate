@@ -353,7 +353,7 @@ for my $o (@OtherEquiv) {
     close $fh;
 }
 
-# $Code{$k} : precomposite (such as 04D1, CYRILLIC SMALL LETTER A WITH BREVE)
+# $Code{$k} : precomposed (such as 04D1, CYRILLIC SMALL LETTER A WITH BREVE)
 # $eqs      : equivalent sequence (such as <0430><0306>)
 # $starter  : starter codepoint (integer such as hex '0430')
 my @Contractions; # store Cyrillic, currently required, and others.
@@ -495,7 +495,7 @@ for my $txt (@txts) {
 	$entry .= parse_entry($_, \%locale_keys);
     }
 
-    # precomposites to be suppressed as additional equivalents
+    # precomposed chars to be suppressed as additional equivalents
     if ($ptxt =~ /suppress => \[(.*)\]/s) {
 	my @suplist = eval $1;
 	my %suppressed;

@@ -1,0 +1,68 @@
+#!perl
+use strict;
+use warnings;
+
+# two functions for gen-* scripts : testcount() and testhead()
+
+sub testcount {
+    my $r_ok = shift; # reference to the counter
+    my $test = shift; # give a test script or increase by
+    my $mult = shift; # multiplier (tests in a loop)
+
+    my $numeric = $test =~ /^\d+\z/;
+    $$r_ok += $numeric ? $test : ($mult ? $mult : 1) *
+				 ($test =~ s/ok\(/ok\(/g);
+	# if $test is real, ok() in the script will be counted.
+	# if $numeric, only increase in $r_ok.
+
+    my $retval;
+    $retval .= "{\n" if $mult;
+    $retval .= $test if !$numeric;
+    $retval .= "}\n" if $mult;
+    $retval .= "\n# $$r_ok\n\n";
+    return $retval;
+}
+
+sub testhead {
+    my $loc = shift;
+    my $ok  = shift;
+    my $lc = lc $loc;
+    my $uc = uc $loc;
+    my $uf = ucfirst $lc;
+
+    my $head = <<'HEADER';
+BEGIN {
+    unless ("A" eq pack('U', 0x41)) {
+	print "1..0 # Unicode::Collate " .
+	    "cannot stringify a Unicode code point\n";
+	exit 0;
+    }
+    if ($ENV{PERL_CORE}) {
+	chdir('t') if -d 't';
+	@INC = $^O eq 'MacOS' ? qw(::lib) : qw(../lib);
+    }
+}
+HEADER
+
+    my $locale = <<"LOCALE";
+use Test;
+BEGIN { plan tests => $ok };
+
+use strict;
+use warnings;
+use Unicode::Collate::Locale;
+
+ok(1);
+
+#########################
+
+my \$obj$uf = Unicode::Collate::Locale->
+    new(locale => '$uc', normalization => undef);
+
+ok(\$obj$uf->getlocale, '$lc');
+LOCALE
+
+    return "\n$head\n$locale\n";
+}
+
+1;
