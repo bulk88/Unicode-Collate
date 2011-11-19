@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-# two functions for gen-* scripts : testcount() and testhead()
+# functions for gen-* scripts : testcount(), testhead() and testnew().
 
 sub testcount {
     my $r_ok = shift; # reference to the counter
@@ -55,14 +55,21 @@ use Unicode::Collate::Locale;
 ok(1);
 
 #########################
-
-my \$obj$uf = Unicode::Collate::Locale->
-    new(locale => '$uc', normalization => undef);
-
-ok(\$obj$uf->getlocale, '$lc');
 LOCALE
+    return "\n$head\n$locale\n".testnew($uf, $uc);
+}
 
-    return "\n$head\n$locale\n";
+sub testnew {
+    my $obj = shift;
+    my $loc = shift;
+    my $ret = lc $loc;
+    return <<"NEW_OK";
+my \$obj$obj = Unicode::Collate::Locale->
+    new(locale => '$loc', normalization => undef);
+
+ok(\$obj$obj->getlocale, '$ret');
+
+NEW_OK
 }
 
 1;

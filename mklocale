@@ -24,6 +24,15 @@
 #    ++1 and --1 for secondary weight, +++1 and ---1 for tertiary weight.
 #    a number followed by + or - is decimal.
 #
+#  3220;<0028 4E00 0029>+++?
+#     '+++?' means implicit tertiary weights and borrows them from DUCET.
+#     The lefthand (3220) and the righthand (0028 4E00 0029) *must* be
+#     secondary equal in DUCET too (usually compatibility equivalent).
+#     The example shown works like "3220;<0028>+++2 <4E00>+++2 <0029>+++29",
+#     since the tertiary weights of U+3200 are (0x4,0x4,0x1F), those of
+#     <0028 4E00 0029> are (0x2,0x2,0x2), and the difference is (+2,+2,+29).
+#     Limitation: cannot be combined with other rules in the same line.
+#
 # 01FD;<00E6><0301> ===> U+01FD eq U+00E6,U+0301
 #    <XXXX> can be the base followed by +1 etc.
 #    Ex. 1D2D;<00C6>+++12
@@ -82,7 +91,7 @@ sub ce {
 our $PACKAGE = 'Unicode::Collate, locale';
 our $ENT_FMT = "%-9s ; %s # %s\n";
 our $RE_CE   = '(?:\[[0-9A-Fa-f\.\*]+\])';
-
+our $CUR_DIR = File::Spec->curdir();
 
 use constant SBase  => 0xAC00;
 use constant SFinal => 0xD7A3;
@@ -91,6 +100,12 @@ use constant TCount =>     28;
 use constant LBase  => 0x1100;
 use constant VBase  => 0x1161;
 use constant TBase  => 0x11A7;
+
+use constant Min2Wt => 0x20;
+use constant Min3Wt => 0x02;
+
+our $OvCJK  = 'overrideCJK';
+our $OvHang = 'overrideHangul';
 
 sub decHangul {
     my $code = shift;
@@ -105,6 +120,16 @@ sub decHangul {
     );
 }
 
+use constant CJK_UidFr =>  0x4E00;
+use constant CJK_UidTo =>  0x9FFF;
+
+sub simple_cjk_deriv { # $u should be CJK U.I. or Ext.
+    my $u = hex shift;
+    my $base = (CJK_UidFr <= $u && $u <= CJK_UidTo) ? 0xFB40 : 0xFB80;
+    my $aaaa = $base + ($u >> 15);
+    my $bbbb = ($u & 0x7FFF) | 0x8000;
+    return ce(0, $aaaa, Min2Wt, Min3Wt, $u).ce(0, $bbbb, 0, 0, $u);
+}
 
 my (%Keys, %Code, %Equiv, %Name, $vDUCET, %JamoWt1);
 my $JamoWt2 = 0;
@@ -191,10 +216,10 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 1EB7;<0103><0323>
 1EB6;<0102><0323>
 =0186= (open-O)
-1D53;<0186>+++12
+1D53;<0186>+++?
 =0190= (open-E)
-2107;<0190>+++2
-1D4B;<0190>+++12
+2107;<0190>+++?
+1D4B;<0190>+++?
 =01A0= (O-horn)
 1EDD;<01A1><0300>
 1EDC;<01A0><0300>
@@ -305,7 +330,7 @@ for my $o (@OtherEquiv) {
 
 {
     my($f, $fh);
-    foreach my $d (File::Spec->curdir()) {
+    foreach my $d ($CUR_DIR) {
 	$f = File::Spec->catfile($d, "Collate", "allkeys.txt");
 	last if open($fh, $f);
 	$f = undef;
@@ -369,7 +394,7 @@ for my $k (sort keys %Equiv) {
 
 {
     my($f, $fh);
-    foreach my $d (File::Spec->curdir()) {
+    foreach my $d ($CUR_DIR) {
 	$f = File::Spec->catfile($d, "Collate", "CJK", "Korean.pm");
 	last if open($fh, $f);
 	$f = undef;
@@ -456,14 +481,20 @@ for my $txt (@txts) {
 	next if /^\s*\z/;
 	if (/^use/) {
 	    print $ph "$_;\n";
+	    s/^[^:]+:://;
+	    s/\s*\z/.pm/;
+	    my $f = File::Spec->catfile($CUR_DIR, split /::/, $_);
+	    require $f; # assume that will be located under ./Collate
 	    next;
 	}
 	if (/^backwards$/) {
 	    $ptxt .= "   backwards => 2,\n";
 	    next;
 	}
-	if (s/^override(CJK|Hangul)[ \t]+//) {
-	    $ptxt .= "   override$1 => $_,\n";
+	if (s/^(override)(CJK|Hangul)[ \t]+//) {
+	    my $key = $1.$2;
+	    $ptxt .= "   $key => $_,\n";
+	    $locale_keys{$key} = eval $_;
 	    next;
 	}
 	if (/^upper$/) {
@@ -564,6 +595,7 @@ sub parse_entry {
 	if ($Equiv{$key}) {
 	    for my $eq (@{ $Equiv{$key} }) {
 		next if $lockeys->{$eq};
+		next if $eq eq '3038'; # U+3038 and U+2F17 aren't canonical
 		$newentry .= sprintf $ENT_FMT, $eq, $newce, $Name{$eq};
 		$lockeys->{$eq} = $newce;
 	    }
@@ -586,9 +618,7 @@ sub parse_entry {
 }
 
 sub getunicode {
-    my $c = shift;
-    my @c = split //, $c;
-    return join ' ', map { sprintf '%04X', unpack 'U', $_ } @c;
+    return join ' ', map { sprintf '%04X', $_ } unpack 'U*', shift;
 }
 
 sub parse_element {
@@ -609,7 +639,9 @@ sub getname {
     my $e = shift;
     return $Name{$e} if $Name{$e};  # single collation element (without <>)
     my @e = split ' ', $e;
-    my @name = map { $Name{$_} ? $Name{$_} : 'unknown' } @e;
+    my @name = map { $Name{$_} ? $Name{$_} :
+		     /^FD[DE][0-9A-F]\z/ ? "noncharacter-$_" :
+		     'unknown' } @e;
     return sprintf '<%s>', join ', ', @name;
 }
 
@@ -631,12 +663,47 @@ sub parse_rule {
 	    next;
 	}
 
+	if ($rule =~ s/^<([0-9A-F ]+)>\+\+\+\?//) {
+	    my @c = split ' ', $1;
+	    my $compat = $Keys{$e};
+	    my $decomp = join '', map {
+			$Keys{$_} ? $Keys{$_} : simple_cjk_deriv($_)
+		    } @c;
+	    my $regexp = $decomp;
+	    $regexp =~ s/([\[\]\.\*])/\\$1/g;
+	    $regexp =~ s/\.00(?:0[1-9A-F]|1[0-9A-F])\\\.[0-9A-F]+
+			/.(00(?:0[1-9A-F]|1[0-9A-F]))\\.[0-9A-F]+/gx;
+			# tertiary weights of 01-1F (not including 00)
+	    my @tertD = map hex($_), $decomp =~ /^$regexp\z/;
+	    my @tertC = map hex($_), $compat =~ /^$regexp\z/;
+	    croak "wrong at $rule" unless @c == @tertD && @c == @tertC;
+	    my @diff  = map { $tertC[$_] - $tertD[$_] } 0..@c-1;
+	    my $replace = join ' ', map "<$c[$_]>+++$diff[$_]", 0..@c-1;
+	    $rule = $replace.$rule;
+	    next;
+	}
+
 	my $key;
 	if ($rule =~ s/^(<[0-9A-Za-z'{ }]+>|[A-Za-z])//) {
 	    my $e = $1;
 	    my $c = $e =~ tr/<>//d ? parse_element($e) : getunicode($e);
 	    croak "<$c> is too short" if 4 > length $c;
 	    $key = $lockeys->{$c} || $Keys{$c};
+	    if (!defined $key) {
+		my $u = hex $c;
+		my @r;
+		if (SBase <= $u && $u <= SFinal) {
+		    @r = $lockeys->{$OvHang}->($u) if $lockeys->{$OvHang};
+		} else {
+		    # but no check if $u is in CJK Ideograph
+		    @r = $lockeys->{$OvCJK} ->($u) if $lockeys->{$OvCJK};
+		}
+		if (@r) {
+		    $key = join '', map {
+			ref $_ ? ce(0, @$_) : ce(0, $_, Min2Wt, Min3Wt, $u)
+			    } @r;
+		}
+	    }
 	}
 
 	my @base;

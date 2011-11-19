@@ -17,6 +17,7 @@ Collate/Locale/as.pl		Unicode::Collate::Locale
 Collate/Locale/az.pl		Unicode::Collate::Locale
 Collate/Locale/be.pl		Unicode::Collate::Locale
 Collate/Locale/bg.pl		Unicode::Collate::Locale
+Collate/Locale/bn.pl		Unicode::Collate::Locale
 Collate/Locale/ca.pl		Unicode::Collate::Locale
 Collate/Locale/cs.pl		Unicode::Collate::Locale
 Collate/Locale/cy.pl		Unicode::Collate::Locale
@@ -63,6 +64,7 @@ Collate/Locale/pa.pl		Unicode::Collate::Locale
 Collate/Locale/pl.pl		Unicode::Collate::Locale
 Collate/Locale/ro.pl		Unicode::Collate::Locale
 Collate/Locale/ru.pl		Unicode::Collate::Locale
+Collate/Locale/sa.pl		Unicode::Collate::Locale
 Collate/Locale/se.pl		Unicode::Collate::Locale
 Collate/Locale/si.pl		Unicode::Collate::Locale
 Collate/Locale/si_dict.pl	Unicode::Collate::Locale
@@ -95,6 +97,7 @@ data/as.txt		# preparating Unicode::Collate::Locale
 data/az.txt		# preparating Unicode::Collate::Locale
 data/be.txt		# preparating Unicode::Collate::Locale
 data/bg.txt		# preparating Unicode::Collate::Locale
+data/bn.txt		# preparating Unicode::Collate::Locale
 data/ca.txt		# preparating Unicode::Collate::Locale
 data/cs.txt		# preparating Unicode::Collate::Locale
 data/cy.txt		# preparating Unicode::Collate::Locale
@@ -141,6 +144,7 @@ data/pa.txt		# preparating Unicode::Collate::Locale
 data/pl.txt		# preparating Unicode::Collate::Locale
 data/ro.txt		# preparating Unicode::Collate::Locale
 data/ru.txt		# preparating Unicode::Collate::Locale
+data/sa.txt		# preparating Unicode::Collate::Locale
 data/se.txt		# preparating Unicode::Collate::Locale
 data/si.txt		# preparating Unicode::Collate::Locale
 data/si_dict.txt	# preparating Unicode::Collate::Locale
@@ -169,6 +173,7 @@ data/zh_pin.txt		# preparating Unicode::Collate::Locale
 data/zh_strk.txt	# preparating Unicode::Collate::Locale
 disableXS	# perl script to disable XSUB
 enableXS	# perl script to enable XSUB
+gendata/cjk_test	# whole tests for CJK/*.pm
 gendata/dumpstr		# preparating Unicode::Collate::Locale
 gendata/gen-head	# preparating Unicode::Collate::Locale
 gendata/gen-hu		# preparating Unicode::Collate::Locale
@@ -209,8 +214,10 @@ t/loc_as.t	test Unicode::Collate::Locale
 t/loc_az.t	test Unicode::Collate::Locale
 t/loc_be.t	test Unicode::Collate::Locale
 t/loc_bg.t	test Unicode::Collate::Locale
+t/loc_bn.t	test Unicode::Collate::Locale
 t/loc_bs.t	test Unicode::Collate::Locale
 t/loc_ca.t	test Unicode::Collate::Locale
+t/loc_cjk.t	test Unicode::Collate::Locale
 t/loc_cs.t	test Unicode::Collate::Locale
 t/loc_cy.t	test Unicode::Collate::Locale
 t/loc_cyrl.t	test Unicode::Collate::Locale
@@ -260,6 +267,7 @@ t/loc_pa.t	test Unicode::Collate::Locale
 t/loc_pl.t	test Unicode::Collate::Locale
 t/loc_ro.t	test Unicode::Collate::Locale
 t/loc_ru.t	test Unicode::Collate::Locale
+t/loc_sa.t	test Unicode::Collate::Locale
 t/loc_se.t	test Unicode::Collate::Locale
 t/loc_si.t	test Unicode::Collate::Locale
 t/loc_sidt.t	test Unicode::Collate::Locale
