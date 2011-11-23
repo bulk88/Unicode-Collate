@@ -4,7 +4,9 @@ use warnings;
 
 # functions for gen-* scripts : testcount(), testhead() and testnew().
 
-sub testcount {
+require 'dumpstr';  # for string()
+
+sub testcount ($$;$) {
     my $r_ok = shift; # reference to the counter
     my $test = shift; # give a test script or increase by
     my $mult = shift; # multiplier (tests in a loop)
@@ -23,7 +25,7 @@ sub testcount {
     return $retval;
 }
 
-sub testhead {
+sub testhead ($$) {
     my $loc = shift;
     my $ok  = shift;
     my $lc = lc $loc;
@@ -59,7 +61,7 @@ LOCALE
     return "\n$head\n$locale\n".testnew($uf, $uc);
 }
 
-sub testnew {
+sub testnew ($$) {
     my $obj = shift;
     my $loc = shift;
     my $ret = lc $loc;
@@ -70,6 +72,21 @@ my \$obj$obj = Unicode::Collate::Locale->
 ok(\$obj$obj->getlocale, '$ret');
 
 NEW_OK
+}
+
+sub testprim ($$) {
+    my $objn = shift; # object identifier following "\$obj"
+    my $list = shift; # arrayref of codepoints in hexadecimal
+    my $pre = pack('U', hex shift @$list);
+    my $retv = '';
+    for my $h (@$list) {
+	my $cur = pack('U', hex $h);
+	my $spre = string($pre);
+	my $scur = string($cur);
+	$retv .= qq|ok(\$obj$objn->lt($spre, $scur));\n|;
+	$pre = $cur;
+    }
+    return $retv;
 }
 
 1;

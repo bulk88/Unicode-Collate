@@ -4,18 +4,19 @@
 # output files
 #
 #   zh.txt   (equal to data/zh.txt)
-#   loc_zh.t (a main part of t/loc_zh.t)
+#   loc_zh.t (equal to t/loc_zh.t)
 #
 use strict;
 use warnings;
 require 'gen-head'; # for testcount() and testhead()
 
 use Unicode::Normalize;
-require 'dumpstr';
+require 'dumpstr'; # for element() and string()
 
-my @low = qw( 61 65 EA 69 6D 6E 6F 75 FC );
-my @upp = qw( 41 45 CA 49 4D 4E 4F 55 DC );
-my @tone = qw( 304 301 30C 300 0 );
+my @low = qw( 61 65 EA 69 6D 6E 6F 75 FC ); # lower base letters
+my @upp = qw( 41 45 CA 49 4D 4E 4F 55 DC ); # upper base letters
+my @tone = qw( 304 301 30C 300 0 ); # combining characters for tones
+my @misc = qw( 303 309 323 ); # some combining characters other than tones
 
 my $textf = 'zh.txt';
 my $text0 = '';
@@ -23,6 +24,7 @@ my $testf = 'loc_zh.t';
 my $test0 = '';
 my $test1 = '';
 my $test2 = '';
+my $test3 = '';
 
 for my $i (0..@low-1) {
     my $lb = pack('U', hex $low[$i]);
@@ -45,9 +47,11 @@ for my $i (0..@low-1) {
 	    $test1 .= qq|ok(\$objZh->eq($sldec, $sudec));\n|;
 	}
 
+	my $te1 = '';
+	my $te2 = '';
 	my $tx1 = '';
 	my $tx2 = '';
-	for my $bc ($lb, $ub) {
+	for my $bc ($lb, $ub) { # base letter
 	    my $dec = NFD($bc).$tc;
 	    my $com = NFC($bc.$tc);
 	    my $cat = $bc.$tc;
@@ -55,16 +59,16 @@ for my $i (0..@low-1) {
 	    my $sdec = string($dec);
 	    my $scom = string($com);
 	    my $scat = string($cat);
-
-	    if ($dec ne $com) {
-		$test2 .= qq|ok(\$objZh->eq($sdec, $scom));\n|;
+	    {
+		my $sacc = $sdec;
+		$te1 .= qq|ok(\$objZh->eq($sdec, $scom));\n| if $dec ne $com;
+		$te1 .= qq|ok(\$objZh->eq($sdec, $sacc));\n|
+			if $sacc =~ s/(x\{?3)0([01])/${1}4${2}/;
 	    }
 	    if ($dec ne $cat && $cat ne $com) {
-		$test2 .= qq|ok(\$objZh->eq($sdec, $scat));\n|;
-	    }
-	    my $sacc = $sdec; # U+0340 and U+0341
-	    if ($sacc =~ s/(x\{?3)0([01])/${1}4${2}/) {
-		$test2 .= qq|ok(\$objZh->eq($sdec, $sacc));\n|;
+		$te2 .= qq|ok(\$objZh->eq($sdec, $scat));\n|;
+		$te2 .= qq|ok(\$objZh->eq($sdec, $scat));\n|
+			if $scat =~ s/(x\{?3)0([01])/${1}4${2}/;
 	    }
 
 	    # .txt
@@ -83,7 +87,22 @@ for my $i (0..@low-1) {
 		$tx2 .= "$e;<$c>\n" if $e =~ s/(\b03)0([01])/${1}4${2}/;
 	    }
 	}
+	$test2 .= "$te1$te2";
 	$text0 .= "$tx1$tx2";
+    }
+
+    for my $m (@misc) { # misc. combining character
+	my $mc = pack('U', hex $m);
+	for my $bc ($lb, $ub) { # base letter
+	    next if $bc eq NFD($bc); # $bc should be a composite
+	    my $dec = NFD($bc).$mc;
+	    my $com = NFC($bc.$mc);
+	    if (length $com == 1) {
+		my $sdec = string($dec);
+		my $scom = string($com);
+		$test3 .= qq|ok(\$objZh->eq($sdec, $scom));\n|;
+	    }
+	}
     }
 }
 
@@ -109,7 +128,7 @@ $test1 =~ s/->eq/->lt/g;
 $test .= "\$objZh->change(level => 3);\n\n";
 $test .= testcount(\$ok, $test1);
 $test .= testcount(\$ok, $test2);
-$test .= testcount(\$ok, 6);
+$test .= testcount(\$ok, $test3);
 
 chomp $test;
 open my $th, ">$testf" or die $testf;

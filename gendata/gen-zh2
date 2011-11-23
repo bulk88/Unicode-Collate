@@ -17,27 +17,36 @@
 #   zh_pin.txt  (equal to data/zh_pin.txt)
 #   zh_strk.txt (equal to data/zh_strk.txt)
 #   loc_cjk.t   (equal to t/loc_cjk.t)
-#   loc_zhb5.t  (a main part of t/loc_zhb5.t)
-#   loc_zhgb.t  (a main part of t/loc_zhgb.t)
-#   loc_zhpy.t  (a main part of t/loc_zhpy.t)
-#   loc_zhst.t  (a main part of t/loc_zhst.t)
+#   loc_zhb5.t  (equal to t/loc_zhb5.t)
+#   loc_zhgb.t  (equal to t/loc_zhgb.t)
+#   loc_zhpy.t  (equal to t/loc_zhpy.t)
+#   loc_zhst.t  (equal to t/loc_zhst.t)
 #
 use strict;
 use warnings;
 use File::Spec;
 
-require 'gen-head'; # for testhead() and testnew()
+require 'gen-head'; # for testcount(), testhead(), testnew() and testprim()
 require 'dumpstr';  # for string()
-chomp(my @cjkdata = <DATA>);
+chomp(my @cjkdata = <DATA>); # compatibility decomposable characters
 
 my $pkg  = 'Unicode::Collate::CJK';
-my @file = qw(Big5          GB2312            Pinyin         Stroke       );
-my %type = qw(Big5 big5han  GB2312 gb2312han  Pinyin pinyin  Stroke stroke);
-my %txt  = qw(Big5 big5     GB2312 gb         Pinyin pin     Stroke strk  );
-my %cjk  = qw(Big5 no       GB2312 no         Pinyin yes     Stroke yes   );
-my %t    = qw(Big5 b5       GB2312 gb         Pinyin py      Stroke st    );
-my %test = qw(Big5 21       GB2312 18         Pinyin 11      Stroke 19    );
-  # testcount += value of %test
+my @init = qw(B          G            P         S       );
+my %file = qw(B Big5     G GB2312     P Pinyin  S Stroke);
+my %type = qw(B big5han  G gb2312han  P pinyin  S stroke);
+my %txt  = qw(B big5     G gb         P pin     S strk  );
+my %cjk  = qw(B no       G no         P yes     S yes   );
+my %t    = qw(B b5       G gb         P py      S st    );
+my %test = (
+    B => [qw(A000 5159 515B 515E 515D 5161 5163 55E7 74E9 7CCE 4E00 4E59
+             4E01 4E03 4E43 4E5D 4E86 7069 706A 9EA4 9F7E 9F49 9F98)],
+    G => [qw(A000 554A 963F 57C3 6328 54CE 5509 54C0 7691 764C 853C 77EE
+             4E00 9F2F 9F39 9F37 9F3D 9F3E 9F44)],
+    P => [qw(A000 963F 5730 7ACB 4EBA 65E5 4E0A 5929 4E0B 65BC 4E2D 7AFA
+             5750)],
+    S => [qw(A000 4E00 4E59 4E01 4E03 4E43 4E5D 4E86 4E8C 4EBA 513F 5165
+             9E1D 7069 706A 7C72 7229 9EA4 9F7E 9F49 9F98)],
+);
 
 open my $zh, "zh.txt" or die "zh.txt";
 my $zhtxt = join '', <$zh>;
@@ -46,10 +55,12 @@ close $zh;
 open my $zt, "loc_zh.t" or die "loc_zh.t";
 my $zhtest = join '', <$zt>;
 close $zt;
+my $zhtest_ok = ($zhtest =~ /plan tests => (\d+)/) ? $1 : undef;
 
 sub checkdata {
-    my $file   = shift;
-    my $init   = substr($file,0,1);
+    my $init   = shift;
+    my $file   = $file{$init};
+    my $cjk    = $cjk {$init};
     my $count  = shift;
 
     my $d = File::Spec->updir();
@@ -86,50 +97,58 @@ sub checkdata {
     close $fh;
 
     ### WRITE DATA ###
-    my $textf = "zh_$txt{$file}.txt";
+    my $textf = "zh_$txt{$init}.txt";
     open my $dh, ">$textf" or die $textf;
     binmode $dh;
-    print $dh "use ${pkg}::${file}\n";
-    print $dh "overrideCJK \\&${pkg}::${file}::weight${file}\n";
+    my $mod  = join('::', $pkg, $file);
+    my $func = join('::', $pkg, $file, "weight$file");
+    print $dh "use $mod\n";
+    print $dh "overrideCJK $func\n";
     print $dh $zhtxt;
     print $dh "$_->[0];[.$_->[1].20.2.$_->[2]]\n" for @out;
-    if ($cjk{$file} eq 'yes') {
+    if ($cjk eq 'yes') {
 	for my $d (@cjkdata) {
 	    my($a,$b) = split /;/, $d;
 	    print $dh "$a;<$b>+++?\n";
 	}
     } else {
-	die "wrong '$cjk{$file}' for $file" if $cjk{$file} ne 'no';
+	die "wrong '$cjk' for $file" if $cjk ne 'no';
     }
     close $dh;
 
     ### WRITE TEST ###
-    my $testf = "loc_zh$t{$file}.t";
+    my $testf = "loc_zh$t{$init}.t";
+    my $ok = $zhtest_ok;
+    my $tadd = "\n\$objZh->change(level => 1);\n\n";
+    $tadd .= testprim('Zh', $test{$init});
+
+    my $test = $zhtest;
+    $test .= testcount(\$ok, $tadd);
+    chomp $test;
     open my $th, ">$testf" or die $testf;
     binmode $th;
-    my $test = $zhtest;
-       $test =~ s/('[Zz][Hh])(')/$1__$type{$file}$2/g;
-       $test =~ s/(objZh)/$1$init/g;
-       $test =~ s/(plan tests => )(\d+)/$1.($2+$test{$file})/e;
+    $test =~ s/('[Zz][Hh])(')/$1__$type{$init}$2/g;
+    $test =~ s/(objZh)/$1$init/g;
+    $test =~ s/(plan tests => )\d+/$1$ok/;
     print $th $test;
     close $th;
 }
 
-checkdata($_) for @file;
+checkdata($_) for @init;
 
+### WRITE loc_cjk.t ###
 {
     my @obj = qw($objDefault $objZhP $objZhS);
     my @lev = (2, 3);
-    my $test = '';
     my $ok = 1 + @obj;
     my $listobj = join ', ', @obj;
     my $listlev = join ', ', @lev;
 
-    $test .= <<"TEST";
+    my $test = <<"TEST";
 for my \$obj ($listobj) {
     for my \$lev ($listlev) {
 	\$obj->change(level => \$lev);
-	my \$r = \$lev == 2 ? 0 : 1;
+	my \$r = \$lev == $lev[0] ? 0 : 1;
 TEST
     for my $d (@cjkdata) {
 	my($a,$b) = split /;/, $d;
@@ -139,7 +158,8 @@ TEST
     }
     $test .= "    }\n}\n";
 
-    $ok += @obj * @lev * ($test =~ s/ok\(/ok\(/g);
+    testcount(\$ok, $test, @obj * @lev);
+    # discard the return value
 
     my $testf = "loc_cjk.t";
     open my $th, ">$testf" or die $testf;

@@ -15,6 +15,10 @@
 #    Locale/*.pl (need to be moved to Collate/Locale/*.pl to install them)
 #    Korean.pm   (need to be moved to Collate/CJK/Korean.pm to install it)
 #
+# What to do:
+#   * convert data/*.txt to Locale/*.pl
+#   * rewrite %jamo2prim in Korean.pm
+#
 # == Examples of the Rules for data/*.txt ==
 #
 # 00F1;n+1 ===> primary weight of 00F1 is greater than that of n by 1.
@@ -22,7 +26,7 @@
 #    +1  primary weight greater by 1.
 #    -1  primary weight lesser by 1.
 #    ++1 and --1 for secondary weight, +++1 and ---1 for tertiary weight.
-#    a number followed by + or - is decimal.
+#    A number followed by + or - is decimal.
 #
 #  3220;<0028 4E00 0029>+++?
 #     '+++?' means implicit tertiary weights and borrows them from DUCET.
@@ -51,20 +55,24 @@
 #     < > after ; can enclose a unit comprising plural XXXX or {literal}.
 #
 # backwards
-#    backwards => 2
+#    It will give "backwards => 2,".
 #
 # upper
-#    upper_before_lower => 1
+#    It will give "upper_before_lower => 1,".
 #
 # suppress
-#    suppress 0400-0417 041A-0437 043A-045F
-#        will be converted to
-#    suppress => [0x0400..0x0417, 0x041A..0x0437, 0x043A..0x045F],
-#    (code points may be listed in few lines)
+#    "suppress XXXX YYYY" will give "suppress => [0xXXXX, 0xYYYY],",
+#    "suppress XXXX-YYYY" will give "suppress => [0xXXXX..0xYYYY],".
+#    Values XXXX etc. should be hexadecimal, and may be listed in few lines.
 #
 # use
+#    "use PACKAGE" will give "use PACKAGE;".  The PACKAGE stands for a module,
+#    such as CJK/*.pm for overrideCJK, to be loaded from Locale/*.pl.
 #
 # overrideCJK and overrideHangul
+#    "overrideCJK FUNCNAME" or "overrideCJK \&FUNCNAME" will give
+#    "overrideCJK => \&FUNCNAME,", where FUNCNAME should be visible
+#    from Locale/*.pl. As well, overrideHangul works similar.
 #
 use 5.006;
 use strict;
@@ -131,8 +139,14 @@ sub simple_cjk_deriv { # $u should be CJK U.I. or Ext.
     return ce(0, $aaaa, Min2Wt, Min3Wt, $u).ce(0, $bbbb, 0, 0, $u);
 }
 
-my (%Keys, %Code, %Equiv, %Name, $vDUCET, %JamoWt1);
-my $JamoWt2 = 0;
+my %Keys;        # "0300" => "[.0000.0035.0002.0300]"
+my %Code;        # "[.0000.0035.0002.0300]" => "0300"
+my %Name;        # "0300" => "COMBINING GRAVE ACCENT"
+my %Equiv;       # "[.0000.0035.0002.0300]" => ["0340", "0953"]
+my $vDUCET;      # from @version, such as "6.0.0"
+my %JamoWt1;     # primary weights of modern jamo (codept => wt) decimal
+my $JamoWt2 = 0; # the maximum secondary weight of modern jamo (decimal)
+my @CompId;      # decomp. mapping of CJK compat. id. like ["FA00", 0x5207]
 
 my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 =00C2= (A-circ)
@@ -344,8 +358,7 @@ for my $o (@OtherEquiv) {
 
 	next if $line !~ /^\s*[0-9A-Fa-f]/;
 
-	my $name = '';
-	$line =~ s/[#%]\s*(.*)// and $name = $1;
+	my $name = ($line =~ s/[#%]\s*(.*)//) ? $1 : '';
 
 	# gets element
 	my($e, $k) = split /;/, $line;
@@ -366,12 +379,23 @@ for my $o (@OtherEquiv) {
 	$Code{$k} = $e if !exists $Code{$k};
 	$Name{$e} = $name;
 
-	if ($e =~ /^11[0-9A-F]{2}\z/) { # Hangul Jamo (modern only)
+	# Hangul Jamo (modern only)
+	if ($e =~ /^11[0-9A-F]{2}\z/) {
 	    my @ec = _getHexArray($e);
 	    my @kc = _getHexArray($k);
 	    if (@ec == 1) {
 		$JamoWt1{$ec[0]} = $kc[0]; # each jamo
 		$JamoWt2 = $kc[1] if $JamoWt2 < $kc[1]; # max
+	    }
+	}
+
+	# CJK compatibility ideographs
+	if ($k =~ /^\[\.F[0-9A-F]+\.[0-9A-F]+\.0002\./) {
+	    my @p = map hex($_), $k =~ /\[\.([0-9A-F]+)\./g;
+	    if (@p == 2) {
+		my $ui = ((($p[0] & 0x3F) << 15) | ($p[1] & 0x7FFF));
+		my $h = sprintf "%04X", $ui;
+		push @CompId, [ $e, $ui ] if $e ne $h;
 	    }
 	}
     }
@@ -401,27 +425,18 @@ for my $k (sort keys %Equiv) {
     }
     croak "$PACKAGE: Collate/CJK/Korean.pm is not found" if !defined $f;
 
-    my %KO_jamo;
-    my $KO_head = '';
-    my $KO_foot = '';
-    my $KO_state = 0;
-    my $KO_data  = 0;
+    my %KO_jamo; # (codepoint => 1) for jamo that a syllable comprises.
+    my $KO_head = ''; # before /^my %jamo2prim/
+    my $KO_foot = ''; # after /^\); # for DUCET/
     while (my $line = <$fh>) {
 	chomp $line;
-	if ($KO_state == 0) {
-	    $KO_head .= "$line\n";
-	}
-	if ($KO_state == 2) {
-	    $KO_foot .= "$line\n";
-	}
-	$KO_state = 1 if $line =~ /^my %jamo2prim/;
-	$KO_state = 2 if $line =~ /^\); # for DUCET/;
+	$line .= "\n"; # guarantee the last LF at the file end.
+	$KO_head .= $line if 1 .. ($line =~ /^my %jamo2prim/);
+	$KO_foot .= $line if ($line =~ /^\); # for DUCET/) .. 1; # eof($fh)
 
-	$KO_data = 1 if $line =~ /^__DATA__/;
-	$KO_data = 0 if $line =~ /^__END__/;
-
-	if ($KO_data) {
-	    next if $line !~ /^[A-D]/;
+	# check jamo that a syllable in __DATA__ comprises.
+	if (($line =~ /^__DATA__/) .. ($line =~ /^__END__/)) {
+	    next if $line !~ /^[A-D]/; # skip non-Hangul
 	    my @u = _getHexArray($line);
 	    croak "unexpected $line" if @u != 1;
 	    my $uv = $u[0];
@@ -445,11 +460,9 @@ for my $k (sort keys %Equiv) {
     }
     print $pm "\n" if $count % 4 != 0;
 
-    my $v = $vDUCET ? " # for DUCET v$vDUCET" : '';
-    print $pm ");$v\n";
-
     $JamoWt2 = sprintf "0x%02X", $JamoWt2;
     $KO_foot =~ s/(\$wt = )[0-9x]+/$1$JamoWt2/;
+    $KO_foot =~ s/^(\); # for DUCET).*/$1 v$vDUCET/;
     print $pm $KO_foot;
     close $pm;
 }
@@ -481,17 +494,19 @@ for my $txt (@txts) {
 	next if /^\s*\z/;
 	if (/^use/) {
 	    print $ph "$_;\n";
-	    s/^[^:]+:://;
+	    s/^[^:]+:://; # assume that will be located under ./Collate,
+			  # then omit the first identifier (Unicode::).
 	    s/\s*\z/.pm/;
 	    my $f = File::Spec->catfile($CUR_DIR, split /::/, $_);
-	    require $f; # assume that will be located under ./Collate
+	    $f = 'Korean.pm' if /::Korean\.pm/; # using the newer one
+	    require $f;
 	    next;
 	}
 	if (/^backwards$/) {
 	    $ptxt .= "   backwards => 2,\n";
 	    next;
 	}
-	if (s/^(override)(CJK|Hangul)[ \t]+//) {
+	if (s/^(override)(CJK|Hangul)[ \t]+(?:\\&|)/\\&/) {
 	    my $key = $1.$2;
 	    $ptxt .= "   $key => $_,\n";
 	    $locale_keys{$key} = eval $_;
@@ -537,6 +552,17 @@ for my $txt (@txts) {
 	    my $addline = $contract->[1];
 	    next if ! $suppressed{$starter};
 	    $entry .= parse_entry($addline, \%locale_keys);
+	}
+    }
+
+    # Compatibility ideographs are tailored as equivalent unified ideographs.
+    if ($locale_keys{$OvCJK}) {
+	for my $c (@CompId) {
+	    my $r = $locale_keys{$OvCJK}->($c->[1]);
+	    if (defined $r) {
+		my $addline = sprintf '%s;<%04X>', $c->[0], $c->[1];
+		$entry .= parse_entry($addline, \%locale_keys);
+	    }
 	}
     }
 
@@ -595,7 +621,8 @@ sub parse_entry {
 	if ($Equiv{$key}) {
 	    for my $eq (@{ $Equiv{$key} }) {
 		next if $lockeys->{$eq};
-		next if $eq eq '3038'; # U+3038 and U+2F17 aren't canonical
+		next if $eq eq '3038'; # 3038 is identical to 2F17 in DUCET,
+				       # but not canonical equivalent.
 		$newentry .= sprintf $ENT_FMT, $eq, $newce, $Name{$eq};
 		$lockeys->{$eq} = $newce;
 	    }
@@ -673,7 +700,7 @@ sub parse_rule {
 	    $regexp =~ s/([\[\]\.\*])/\\$1/g;
 	    $regexp =~ s/\.00(?:0[1-9A-F]|1[0-9A-F])\\\.[0-9A-F]+
 			/.(00(?:0[1-9A-F]|1[0-9A-F]))\\.[0-9A-F]+/gx;
-			# tertiary weights of 01-1F (not including 00)
+			# tertiary weights of 01-1F (excluding 00)
 	    my @tertD = map hex($_), $decomp =~ /^$regexp\z/;
 	    my @tertC = map hex($_), $compat =~ /^$regexp\z/;
 	    croak "wrong at $rule" unless @c == @tertD && @c == @tertC;
@@ -695,7 +722,7 @@ sub parse_rule {
 		if (SBase <= $u && $u <= SFinal) {
 		    @r = $lockeys->{$OvHang}->($u) if $lockeys->{$OvHang};
 		} else {
-		    # but no check if $u is in CJK Ideograph
+		    # but no check if $u is in CJK ideographs
 		    @r = $lockeys->{$OvCJK} ->($u) if $lockeys->{$OvCJK};
 		}
 		if (@r) {

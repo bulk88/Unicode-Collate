@@ -1,5 +1,5 @@
 use Unicode::Collate::CJK::JISX0208
-overrideCJK \&Unicode::Collate::CJK::JISX0208::weightJISX0208
+overrideCJK Unicode::Collate::CJK::JISX0208::weightJISX0208
 #hiragana
 3041;<30A1>+++0
 3042;<30A2>+++0

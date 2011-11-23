@@ -1,5 +1,5 @@
 use Unicode::Collate::CJK::Pinyin
-overrideCJK \&Unicode::Collate::CJK::Pinyin::weightPinyin
+overrideCJK Unicode::Collate::CJK::Pinyin::weightPinyin
 0101;a--4
 0100;A--4
 00E1;a--3

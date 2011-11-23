@@ -1,5 +1,5 @@
 use Unicode::Collate::CJK::GB2312
-overrideCJK \&Unicode::Collate::CJK::GB2312::weightGB2312
+overrideCJK Unicode::Collate::CJK::GB2312::weightGB2312
 0101;a--4
 0100;A--4
 00E1;a--3

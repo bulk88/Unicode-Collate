@@ -1,5 +1,5 @@
 use Unicode::Collate::CJK::Stroke
-overrideCJK \&Unicode::Collate::CJK::Stroke::weightStroke
+overrideCJK Unicode::Collate::CJK::Stroke::weightStroke
 0101;a--4
 0100;A--4
 00E1;a--3

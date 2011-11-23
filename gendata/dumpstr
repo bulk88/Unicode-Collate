@@ -4,10 +4,10 @@ use warnings;
 no warnings 'utf8';
 
 # return a string such as '0061 0301', '00FF', etc
-sub unidump { join(' ', map { sprintf '%04X', $_ } unpack 'U*', shift) }
+sub unidump ($) { join(' ', map { sprintf '%04X', $_ } unpack 'U*', shift) }
 
 # return a string such as '{a}0301', '00FF', etc
-sub element {
+sub element ($) {
     my $s = shift;
     my $u = unidump($s);
     for ($u) {
@@ -20,7 +20,7 @@ sub element {
 }
 
 # return a string such as '"a\x{301}"', q|pack('U', 0xFF)|, etc
-sub string {
+sub string ($) {
     my $s = shift;
     my @u = unpack 'U*', $s;
     my $ret = '"';
@@ -42,7 +42,7 @@ sub string {
 }
 
 # usage: -e "require 'dumpstr'; test_element(1);"
-sub test_element {
+sub test_element (;$) {
     my $verbose = shift;
     my %hash = map +($_ => "{$_}"), 'a'..'z', 'A'..'Z';
     my $err = keys %hash == 52 ? '' : "hash error\n";
@@ -59,7 +59,7 @@ sub test_element {
 }
 
 # usage: -e "require 'dumpstr'; test_dumpstr();"
-sub test_dumpstr {
+sub test_dumpstr () {
     my $a = "a\x{301}";
     my $b = pack 'U', 0xFF;
     my $c = "\x{3042}$b";

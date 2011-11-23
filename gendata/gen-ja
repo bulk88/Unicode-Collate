@@ -4,7 +4,7 @@
 # output files
 #
 #   ja.txt     (equal to data/ja.txt)
-#   loc_ja.t   (almost part of t/loc_ja.t)
+#   loc_ja.t   (equal to t/loc_ja.t)
 #   loc_japr.t (equal to t/loc_japr.t)
 #   loc_jait.t (equal to t/loc_jait.t)
 #
@@ -13,7 +13,7 @@ use warnings;
 require 'gen-head'; # for testcount() and testhead()
 
 use Unicode::Normalize;
-require 'dumpstr';
+require 'dumpstr'; # for string() and unidump()
 
 my $textf = 'ja.txt';
 my $text1 = "#hiragana\n";
@@ -70,13 +70,27 @@ for my $u (0x3000, 0xFF00..0xFF9F, 0xFFE0..0xFFFD) {
 
 ### WRITE TEST ###
 my $test = '';
-my $ok = 0;
+my $ok = 2;
+my @listCJK = (
+    [qw(4E9C 5516 5A03 963F 54C0 611B 6328 59F6 9022 8475)],
+    [qw(69C7 9059 7464 51DC 7199 4E02 3400)],
+    [qw(20000 20001 20002 20003 20004 20005)],
+    [qw(4E00 4E01 4E02 4E03 4E04 4E05)],
+    [qw(9F9B 9F9C 9F9D 9F9E 9F9F 9FA0)],
+);
+my @testCJK = map testprim('Ja', $_), @listCJK;
+
+$testCJK[0] =~ s/^/# first ten kanji\n/;
+$testCJK[1] =~ s/^/# last five kanji and undef\n/;
+$testCJK[1] =~ s/(\{(4E02)\}"\)\);)/$1 # $2: UIdeo undef in JIS X 0208/;
+$testCJK[1] =~ s/(\{(3400)\}"\)\);)/$1 # $2: Ext.A undef in JIS X 0208/;
+$testCJK[2] =~ s/^/# Ext.B\n/;
 
 $test .= "\$objJa->change(level => 1);\n\n";
-$test .= testcount(\$ok, 22);
+$test .= testcount(\$ok, join "\n", @testCJK[0..2]);
 
 $test .= "\$objJa->change(overrideCJK => undef);\n\n";
-$test .= testcount(\$ok, 10);
+$test .= testcount(\$ok, join "\n", @testCJK[3,4]);
 
 $test .= "\$objJa->change(level => 3);\n\n";
 $test .= testcount(\$ok, $test1);
@@ -320,7 +334,7 @@ close $ih or die $testf;
 open my $dh, ">$textf" or die $textf;
 binmode $dh;
 print $dh "use Unicode::Collate::CJK::JISX0208\n";
-print $dh "overrideCJK \\&Unicode::Collate::CJK::JISX0208::weightJISX0208\n";
+print $dh "overrideCJK Unicode::Collate::CJK::JISX0208::weightJISX0208\n";
 print $dh "$text1$text2";
 print $dh "$textP$textI";
 close $dh or die $textf;
