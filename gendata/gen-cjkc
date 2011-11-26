@@ -28,18 +28,15 @@ my $f = File::Spec->catfile($d, 'Collate', 'allkeys.txt');
 open my $fh, "<$f" or die $f;
 
 while (<$fh>) {
-    next if !/\[\.F/;
-    if (/\[\.F[0-9A-F]+\.[0-9A-F]+\.0002\./) {
-	my @p = map hex($_), /\[\.([0-9A-F]+)\./g;
-	if (@p == 2) {
-	    my $u = ((($p[0] & 0x3F) << 15) | ($p[1] & 0x7FFF));
-	    my $c = /^\s*([0-9A-F]+)\s*;/ ? hex($1) : 0;
-	    next if $u == $c;
-	    my $su = string(pack 'U', $u);
-	    my $sc = string(pack 'U', $c);
-	    $test .= ' ' x 4 . qq|ok(\$obj->eq($su, $sc));\n|;
-	}
-    }
+    next if !/\[\.F[0-9A-F]+\.[0-9A-F]+\.0002\./;
+    my @p = map hex($_), /\[\.([0-9A-F]+)\./g;
+    next if @p != 2;
+    my $u = ((($p[0] & 0x3F) << 15) | ($p[1] & 0x7FFF));
+    my $c = /^\s*([0-9A-F]+)\s*;/ ? hex($1) : 0;
+    next if $u == $c; # not decomposable
+    my $su = string(pack 'U', $u);
+    my $sc = string(pack 'U', $c);
+    $test .= ' ' x 4 . qq|ok(\$obj->eq($su, $sc));\n|;
 }
 close $fh;
 

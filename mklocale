@@ -55,24 +55,29 @@
 #     < > after ; can enclose a unit comprising plural XXXX or {literal}.
 #
 # backwards
-#    It will give "backwards => 2,".
+#    It gives "backwards => 2,".
 #
 # upper
-#    It will give "upper_before_lower => 1,".
+#    It gives "upper_before_lower => 1,".
 #
 # suppress
-#    "suppress XXXX YYYY" will give "suppress => [0xXXXX, 0xYYYY],",
-#    "suppress XXXX-YYYY" will give "suppress => [0xXXXX..0xYYYY],".
+#    "suppress XXXX YYYY" gives "suppress => [0xXXXX, 0xYYYY],",
+#    "suppress XXXX-YYYY" gives "suppress => [0xXXXX..0xYYYY],".
 #    Values XXXX etc. should be hexadecimal, and may be listed in few lines.
 #
 # use
-#    "use PACKAGE" will give "use PACKAGE;".  The PACKAGE stands for a module,
+#    "use PACKAGE" gives "use PACKAGE;".  The PACKAGE stands for a module,
 #    such as CJK/*.pm for overrideCJK, to be loaded from Locale/*.pl.
 #
 # overrideCJK and overrideHangul
-#    "overrideCJK FUNCNAME" or "overrideCJK \&FUNCNAME" will give
+#    "overrideCJK FUNCNAME" or "overrideCJK \&FUNCNAME" gives
 #    "overrideCJK => \&FUNCNAME,", where FUNCNAME should be visible
 #    from Locale/*.pl. As well, overrideHangul works similar.
+#
+# locale_version
+#    The version number of Locale/*.pl. It should be updated when a *.pl file
+#    will be changed. The default value is 0.87, that is the version number
+#    of Locale.pm starting to support locale_version.
 #
 use 5.006;
 use strict;
@@ -395,7 +400,7 @@ for my $o (@OtherEquiv) {
 	    if (@p == 2) {
 		my $ui = ((($p[0] & 0x3F) << 15) | ($p[1] & 0x7FFF));
 		my $h = sprintf "%04X", $ui;
-		push @CompId, [ $e, $ui ] if $e ne $h;
+		push @CompId, [$e, $ui] if $e ne $h; # should be decomposable
 	    }
 	}
     }
@@ -489,9 +494,14 @@ for my $txt (@txts) {
 
     my $ptxt  = '';
     my $entry = '';
+    my $locale_version = '0.87'; # beginning this custom
     while (<$fh>) {
 	chomp;
 	next if /^\s*\z/;
+	if (s/^locale_version//) {
+	    $locale_version = $1 if /(\S+)/;
+	    next;
+	}
 	if (/^use/) {
 	    print $ph "$_;\n";
 	    s/^[^:]+:://; # assume that will be located under ./Collate,
@@ -559,10 +569,9 @@ for my $txt (@txts) {
     if ($locale_keys{$OvCJK}) {
 	for my $c (@CompId) {
 	    my $r = $locale_keys{$OvCJK}->($c->[1]);
-	    if (defined $r) {
-		my $addline = sprintf '%s;<%04X>', $c->[0], $c->[1];
-		$entry .= parse_entry($addline, \%locale_keys);
-	    }
+	    next if !defined $r;
+	    my $addline = sprintf '%s;<%04X>', $c->[0], $c->[1];
+	    $entry .= parse_entry($addline, \%locale_keys);
 	}
     }
 
@@ -573,7 +582,8 @@ for my $txt (@txts) {
 	$ptxt .= "ENTRY\n";
     }
 
-    print $ph "+{\n$ptxt};\n";
+    my $lv = "   locale_version => $locale_version,\n";
+    print $ph "+{\n$lv$ptxt};\n";
     close $fh;
     close $ph;
 }
@@ -634,10 +644,9 @@ sub parse_entry {
 	    my($e,$rule) = split_e_rule($o);
 	    my $name = getname($e);
 	    (my $newce, undef) = parse_rule($e, $rule, $lockeys);
-	    if (!$lockeys->{$e}) {
-		$newentry .= sprintf $ENT_FMT, $e, $newce, $name;
-		$lockeys->{$e} = $newce;
-	    }
+	    next if $lockeys->{$e};
+	    $newentry .= sprintf $ENT_FMT, $e, $newce, $name;
+	    $lockeys->{$e} = $newce;
 	}
     }
 

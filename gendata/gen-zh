@@ -97,11 +97,10 @@ for my $i (0..@low-1) {
 	    next if $bc eq NFD($bc); # $bc should be a composite
 	    my $dec = NFD($bc).$mc;
 	    my $com = NFC($bc.$mc);
-	    if (length $com == 1) {
-		my $sdec = string($dec);
-		my $scom = string($com);
-		$test3 .= qq|ok(\$objZh->eq($sdec, $scom));\n|;
-	    }
+	    next if length $com > 1; # $com should be a composite
+	    my $sdec = string($dec);
+	    my $scom = string($com);
+	    $test3 .= qq|ok(\$objZh->eq($sdec, $scom));\n|;
 	}
     }
 }
