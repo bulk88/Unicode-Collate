@@ -12,7 +12,7 @@ BEGIN {
 }
 
 use Test;
-BEGIN { plan tests => 561 }; # 1 + 70 x @Versions
+BEGIN { plan tests => 631 }; # 1 + 70 x @Versions
 
 use strict;
 use warnings;
@@ -22,7 +22,7 @@ ok(1);
 
 #########################
 
-my @Versions = (8, 9, 11, 14, 16, 18, 20, 22);
+my @Versions = (8, 9, 11, 14, 16, 18, 20, 22, 24);
 
 # 12 compatibility ideographs are treated as unified ideographs:
 # FA0E, FA0F, FA11, FA13, FA14, FA1F, FA21, FA23, FA24, FA27, FA28, FA29.

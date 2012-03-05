@@ -12,7 +12,7 @@ BEGIN {
 }
 
 use Test;
-BEGIN { plan tests => 401 }; # 1 + 50 x @Versions
+BEGIN { plan tests => 451 }; # 1 + 50 x @Versions
 
 use strict;
 use warnings;
@@ -22,7 +22,7 @@ ok(1);
 
 #########################
 
-my @Versions = (8, 9, 11, 14, 16, 18, 20, 22);
+my @Versions = (8, 9, 11, 14, 16, 18, 20, 22, 24);
 
 for my $v (@Versions) {
     ok(Unicode::Collate::getHST(0x0000, $v), '');

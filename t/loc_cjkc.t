@@ -12,7 +12,7 @@ BEGIN {
 }
 
 use Test;
-BEGIN { plan tests => 7008 };
+BEGIN { plan tests => 7022 };
 
 use strict;
 use warnings;
@@ -785,6 +785,7 @@ for my $obj ($objDefault, $objB, $objG, $objJ, $objK, $objP, $objS) {
     ok($obj->eq("\x{908F}", "\x{F913}"));
     ok($obj->eq("\x{9094}", "\x{2F9E2}"));
     ok($obj->eq("\x{90CE}", "\x{F92C}"));
+    ok($obj->eq("\x{90DE}", "\x{FA2E}"));
     ok($obj->eq("\x{90F1}", "\x{2F9E3}"));
     ok($obj->eq("\x{90FD}", "\x{FA26}"));
     ok($obj->eq("\x{9111}", "\x{2F9E4}"));
@@ -816,6 +817,7 @@ for my $obj ($objDefault, $objB, $objG, $objJ, $objK, $objP, $objS) {
     ok($obj->eq("\x{967C}", "\x{FAC6}"));
     ok($obj->eq("\x{9686}", "\x{F9DC}"));
     ok($obj->eq("\x{96A3}", "\x{F9F1}"));
+    ok($obj->eq("\x{96B7}", "\x{FA2F}"));
     ok($obj->eq("\x{96B8}", "\x{F9B8}"));
     ok($obj->eq("\x{96C3}", "\x{2F9F3}"));
     ok($obj->eq("\x{96E2}", "\x{F9EA}"));

@@ -23,23 +23,28 @@
 #
 # 00F1;n+1 ===> primary weight of 00F1 is greater than that of n by 1.
 #    Among literals, only [A-Za-z] can be the base.
-#    +1  primary weight greater by 1.
-#    -1  primary weight lesser by 1.
-#    ++1 and --1 for secondary weight, +++1 and ---1 for tertiary weight.
-#    A number followed by + or - is decimal.
+#    +1 for primary weight (greater by 1),
+#    -1 for primary weight (lesser by 1),
+#    ++1 and --1 for secondary weight,
+#    +++1 and ---1 for tertiary weight.
+#    A number followed by + or - is decimal integer.
 #
-#  3220;<0028 4E00 0029>+++?
-#     '+++?' means implicit tertiary weights and borrows them from DUCET.
-#     The lefthand (3220) and the righthand (0028 4E00 0029) *must* be
-#     secondary equal in DUCET too (usually compatibility equivalent).
-#     The example shown works like "3220;<0028>+++2 <4E00>+++2 <0029>+++29",
-#     since the tertiary weights of U+3200 are (0x4,0x4,0x1F), those of
-#     <0028 4E00 0029> are (0x2,0x2,0x2), and the difference is (+2,+2,+29).
-#     Limitation: cannot be combined with other rules in the same line.
+# 0491;<0433>+1
+# 1D2D;<00C6>+++12
+#    XXXX is hexadecimal for U+XXXX.
+#    <XXXX> can be the base followed by +1 etc.
+#
+# 3220;<0028 4E00 0029>+++?
+#    '+++?' means implicit tertiary weights and borrows them from DUCET.
+#    The lefthand (3220) and the righthand (0028 4E00 0029) *must* be
+#    secondary equal in DUCET too (usually compatibility equivalent).
+#    The example shown works like "3220;<0028>+++2 <4E00>+++2 <0029>+++29",
+#    since the tertiary weights of U+3200 are (0x4,0x4,0x1F), those of
+#    <0028 4E00 0029> are (0x2,0x2,0x2), and the difference is (+2,+2,+29).
+#    Limitation: cannot be combined with other rules in the same line.
 #
 # 01FD;<00E6><0301> ===> U+01FD eq U+00E6,U+0301
-#    <XXXX> can be the base followed by +1 etc.
-#    Ex. 1D2D;<00C6>+++12
+#    simple decomposition (without + and -): identical each other.
 #
 # 0064 0335;=
 # 0111;d++1<0335>
@@ -76,14 +81,15 @@
 #
 # locale_version
 #    The version number of Locale/*.pl. It should be updated when a *.pl file
-#    will be changed. The default value is 0.87, that is the version number
-#    of Locale.pm starting to support locale_version.
+#    will be changed. The default value is $DEFAULT_LOCALE_VERSION.
 #
 use 5.006;
 use strict;
 use warnings;
 use Carp;
 use File::Spec;
+
+my $DEFAULT_LOCALE_VERSION = '0.88'; # update DUCET (Unicode 6.1.0)
 
 BEGIN {
     unless ("A" eq pack('U', 0x41)) {
@@ -494,7 +500,8 @@ for my $txt (@txts) {
 
     my $ptxt  = '';
     my $entry = '';
-    my $locale_version = '0.87'; # beginning this custom
+    my $locale_version = $DEFAULT_LOCALE_VERSION;
+
     while (<$fh>) {
 	chomp;
 	next if /^\s*\z/;

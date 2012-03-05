@@ -12,7 +12,7 @@ BEGIN {
 }
 
 use Test;
-BEGIN { plan tests => 131 }; # 11 + 15 x @Versions
+BEGIN { plan tests => 155 }; # 11 + 16 x @Versions
 
 use strict;
 use warnings;
@@ -52,8 +52,9 @@ ok($overCJK->lt("a\x{4E03}", "A\x{4E01}"));
 # 9FA6..9FBB are CJK UI since UCA_Version 14 (Unicode 4.1).
 # 9FBC..9FC3 are CJK UI since UCA_Version 18 (Unicode 5.1).
 # 9FC4..9FCB are CJK UI since UCA_Version 20 (Unicode 5.2).
+# 9FCC       is  CJK UI since UCA_Version 24 (Unicode 6.1).
 
-my @Versions = (8, 9, 11, 14, 16, 18, 20, 22);
+my @Versions = (8, 9, 11, 14, 16, 18, 20, 22, 24);
 
 for my $v (@Versions) {
     $overCJK->change(UCA_Version => $v);
@@ -70,7 +71,8 @@ for my $v (@Versions) {
     ok($overCJK->cmp("a\x{9FC3}", "A\x{9FC4}") == ($v >= 20 ? 1 : -1));
     ok($overCJK->cmp("a\x{9FC4}", "A\x{9FCA}") == ($v >= 20 ? 1 : -1));
     ok($overCJK->cmp("a\x{9FCA}", "A\x{9FCB}") == ($v >= 20 ? 1 : -1));
-    ok($overCJK->cmp("a\x{9FCB}", "A\x{9FCC}") == -1);
-    ok($overCJK->cmp("a\x{9FCC}", "A\x{9FCF}") == -1);
+    ok($overCJK->cmp("a\x{9FCB}", "A\x{9FCC}") == ($v >= 24 ? 1 : -1));
+    ok($overCJK->cmp("a\x{9FCC}", "A\x{9FCD}") == -1);
+    ok($overCJK->cmp("a\x{9FCD}", "A\x{9FCF}") == -1);
 }
 
