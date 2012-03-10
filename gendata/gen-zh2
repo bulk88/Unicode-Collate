@@ -55,7 +55,7 @@ close $zh;
 open my $zt, "loc_zh.t" or die "loc_zh.t";
 my $zhtest = join '', <$zt>;
 close $zt;
-my $zhtest_ok = ($zhtest =~ /plan tests => (\d+)/) ? $1 : undef;
+my $zhtest_ok = ($zhtest =~ /"1..(\d+)\\n"/) ? $1 : undef;
 
 sub checkdata {
     my $init   = shift;
@@ -129,7 +129,7 @@ sub checkdata {
     binmode $th;
     $test =~ s/('[Zz][Hh])(')/$1__$type{$init}$2/g;
     $test =~ s/(objZh)/$1$init/g;
-    $test =~ s/(plan tests => )\d+/$1$ok/;
+    $test =~ s/("1..)\d+(\\n")/$1$ok$2/;
     print $th $test;
     close $th;
 }

@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Unicode-Collate
-version:            0.88
+version:            0.89
 abstract:           Unicode Collation Algorithm
 author:
     - SADAHIRO Tomoyuki <SADAHIRO@cpan.org>
@@ -16,7 +16,6 @@ requires:
     DynaLoader:  0
     File::Spec:  0
     strict:      0
-    Test:        0
     warnings:    0
 no_index:
     directory:

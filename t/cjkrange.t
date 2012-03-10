@@ -11,11 +11,19 @@ BEGIN {
     }
 }
 
-use Test;
-BEGIN { plan tests => 379 }; # 1 + 42 x @Versions
-
 use strict;
 use warnings;
+BEGIN { $| = 1; print "1..379\n"; } # 1 + 42 x @Versions
+my $count = 0;
+sub ok ($;$) {
+    my $p = my $r = shift;
+    if (@_) {
+	my $x = shift;
+	$p = !defined $x ? !defined $r : !defined $r ? 0 : $r eq $x;
+    }
+    print $p ? "ok" : "not ok", ' ', ++$count, "\n";
+}
+
 use Unicode::Collate;
 
 ok(1);

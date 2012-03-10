@@ -1,5 +1,8 @@
 Revision history for Perl module Unicode::Collate.
 
+0.89  Sat Mar 10 20:19:11 2012
+    - avoid "use Test".
+
 0.88  Mon Mar  5 21:56:13 2012
     - DUCET is updated (for Unicode 6.1.0) as Collate/allkeys.txt.
     ! Please notice that allkeys.txt will be overwritten if you have had

@@ -4,7 +4,7 @@ use strict;
 use Carp;
 use base qw(Unicode::Collate);
 
-our $VERSION = '0.88';
+our $VERSION = '0.89';
 
 my $PL_EXT  = '.pl';
 
