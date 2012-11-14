@@ -205,6 +205,7 @@ t/contract.t
 t/default.t	test using DUCET
 t/hangtype.t
 t/hangul.t
+t/ident.t
 t/iglevel2.t
 t/ignor.t
 t/illegal.t
