@@ -89,7 +89,7 @@ use warnings;
 use Carp;
 use File::Spec;
 
-my $DEFAULT_LOCALE_VERSION = '0.88'; # update DUCET (Unicode 6.1.0)
+my $DEFAULT_LOCALE_VERSION = '0.93'; # update DUCET (Unicode 6.2.0)
 
 BEGIN {
     unless ("A" eq pack('U', 0x41)) {
