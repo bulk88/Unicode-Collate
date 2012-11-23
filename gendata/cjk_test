@@ -17,6 +17,8 @@
 # OK - zh_pinyin count
 # OK - zh_stroke compare
 # OK - zh_stroke count
+# OK - zh_zhuyin compare
+# OK - zh_zhuyin count
 #
 use strict;
 
@@ -30,6 +32,7 @@ my %file = qw(
     ko          Korean
     zh_pinyin   Pinyin
     zh_stroke   Stroke
+    zh_zhuyin   Zhuyin
 );
 
 sub testdata ($$) {
@@ -81,6 +84,7 @@ testdata('zh_big5',   13060);
 testdata('zh_gb2312',  6768);
 testdata('zh_pinyin', 20916); # 2.0 short
 testdata('zh_stroke', 23684); # 2.0 short
+testdata('zh_zhuyin', 22160); # 22 short
 
 __END__
 

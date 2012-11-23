@@ -9,6 +9,7 @@
 #   ../Collate/CJK/GB2312.pm
 #   ../Collate/CJK/Pinyin.pm
 #   ../Collate/CJK/Stroke.pm
+#   ../Collate/CJK/Zhuyin.pm
 #
 # output files
 #
@@ -16,11 +17,13 @@
 #   zh_gb.txt   (equal to data/zh_gb.txt)
 #   zh_pin.txt  (equal to data/zh_pin.txt)
 #   zh_strk.txt (equal to data/zh_strk.txt)
+#   zh_zhu.txt  (equal to data/zh_zhu.txt)
 #   loc_cjk.t   (equal to t/loc_cjk.t)
 #   loc_zhb5.t  (equal to t/loc_zhb5.t)
 #   loc_zhgb.t  (equal to t/loc_zhgb.t)
 #   loc_zhpy.t  (equal to t/loc_zhpy.t)
 #   loc_zhst.t  (equal to t/loc_zhst.t)
+#   loc_zhzy.t  (equal to t/loc_zhzy.t)
 #
 use strict;
 use warnings;
@@ -31,12 +34,14 @@ require 'dumpstr';  # for string()
 chomp(my @cjkdata = <DATA>); # compatibility decomposable characters
 
 my $pkg  = 'Unicode::Collate::CJK';
-my @init = qw(B          G            P         S       );
-my %file = qw(B Big5     G GB2312     P Pinyin  S Stroke);
-my %type = qw(B big5han  G gb2312han  P pinyin  S stroke);
-my %txt  = qw(B big5     G gb         P pin     S strk  );
-my %cjk  = qw(B no       G no         P yes     S yes   );
-my %t    = qw(B b5       G gb         P py      S st    );
+my @init = qw(B          G            P         S         Z       );
+my %file = qw(B Big5     G GB2312     P Pinyin  S Stroke  Z Zhuyin);
+my %type = qw(B big5han  G gb2312han  P pinyin  S stroke  Z zhuyin);
+my %txt  = qw(B big5     G gb         P pin     S strk    Z zhu   );
+my %cjk  = qw(B no       G no         P yes     S yes     Z yes   );
+my %t    = qw(B b5       G gb         P py      S st      Z zy    );
+my %ver  = qw(B 0        G 0          P 0       S 0       Z 0.94  );
+
 my %test = (
     B => [qw(A000 5159 515B 515E 515D 5161 5163 55E7 74E9 7CCE 4E00 4E59
              4E01 4E03 4E43 4E5D 4E86 7069 706A 9EA4 9F7E 9F49 9F98)],
@@ -46,7 +51,19 @@ my %test = (
              5750)],
     S => [qw(A000 4E00 4E59 4E01 4E03 4E43 4E5D 4E86 4E8C 4EBA 513F 5165
              9E1D 7069 706A 7C72 7229 9EA4 9F7E 9F49 9F98)],
+    Z => [qw(A000 516B 628A 5DF4 767D 5317 9F3B 4E0D 547D 6BCD 6253 7530
+             52AA 529B 5375 5149 5915 4E09 4E00 7528)],
 );
+
+my $toneZ = << 'TONE';
+02C9;[.0.0199.2.02C9]
+02CA;[.019A.20.2.02CA]
+02C7;[.019B.20.2.02C7]
+02CB;[.019C.20.2.02CB]
+02D9;[.019D.20.2.02D9]
+02EA;[.019E.20.2.02EA]
+02EB;[.019F.20.2.02EB]
+TONE
 
 open my $zh, "zh.txt" or die "zh.txt";
 my $zhtxt = join '', <$zh>;
@@ -61,6 +78,7 @@ sub checkdata {
     my $init   = shift;
     my $file   = $file{$init};
     my $cjk    = $cjk {$init};
+    my $v      = $ver {$init};
     my $count  = shift;
 
     my $d = File::Spec->updir();
@@ -103,7 +121,9 @@ sub checkdata {
     my $mod  = join('::', $pkg, $file);
     my $func = join('::', $pkg, $file, "weight$file");
     print $dh "use $mod\n";
+    print $dh "locale_version $v\n" if $v;
     print $dh "overrideCJK $func\n";
+    print $dh $toneZ if $init eq 'Z';
     print $dh $zhtxt;
     print $dh "$_->[0];[.$_->[1].20.2.$_->[2]]\n" for @out;
     if ($cjk eq 'yes') {
@@ -119,11 +139,22 @@ sub checkdata {
     ### WRITE TEST ###
     my $testf = "loc_zh$t{$init}.t";
     my $ok = $zhtest_ok;
-    my $tadd = "\n\$objZh->change(level => 1);\n\n";
-    $tadd .= testprim('Zh', $test{$init});
 
-    my $test = $zhtest;
+    my $test = "$zhtest\n";
+    my $tadd = "\$objZh->change(level => 1);\n\n";
+    $tadd .= testprim('Zh', $test{$init});
     $test .= testcount(\$ok, $tadd);
+
+    if ($init eq 'Z') {
+	my $t1 = "\$objZh->change(variable => 'non-ignorable');\n\n";
+	$t1 .= testprim('Zh', [qw(300 2C9 2CA 2C7 2CB 2D9 2EA 2EB 20)]);
+	$t1 =~ s/->lt/->eq/; # the first only
+	$test .= testcount(\$ok, $t1);
+
+	my $t2 = "\$objZh->change(level => 2);\n\n";
+	$t2 .= testprim('Zh', [qw(300 2C9)]);
+	$test .= testcount(\$ok, $t2);
+    }
     chomp $test;
     open my $th, ">$testf" or die $testf;
     binmode $th;
@@ -138,7 +169,7 @@ checkdata($_) for @init;
 
 ### WRITE loc_cjk.t ###
 {
-    my @obj = qw($objDefault $objZhP $objZhS);
+    my @obj = qw($objDefault $objZhP $objZhS $objZhZ);
     my @lev = (2, 3);
     my $ok = 1 + @obj;
     my $listobj = join ', ', @obj;
@@ -167,6 +198,7 @@ TEST
     print $th testhead('default', $ok);
     print $th testnew('ZhP', 'ZH__pinyin');
     print $th testnew('ZhS', 'ZH__stroke');
+    print $th testnew('ZhZ', 'ZH__zhuyin');
     print $th $test;
     close $th;
 }

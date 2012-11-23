@@ -10,6 +10,7 @@ Collate/CJK/JISX0208.pm
 Collate/CJK/Korean.pm
 Collate/CJK/Pinyin.pm
 Collate/CJK/Stroke.pm
+Collate/CJK/Zhuyin.pm
 Collate/Locale.pm		Unicode::Collate::Locale
 Collate/Locale/af.pl		Unicode::Collate::Locale
 Collate/Locale/ar.pl		Unicode::Collate::Locale
@@ -91,6 +92,7 @@ Collate/Locale/zh_big5.pl	Unicode::Collate::Locale
 Collate/Locale/zh_gb.pl		Unicode::Collate::Locale
 Collate/Locale/zh_pin.pl	Unicode::Collate::Locale
 Collate/Locale/zh_strk.pl	Unicode::Collate::Locale
+Collate/Locale/zh_zhu.pl	Unicode::Collate::Locale
 data/af.txt		# preparating Unicode::Collate::Locale
 data/ar.txt		# preparating Unicode::Collate::Locale
 data/as.txt		# preparating Unicode::Collate::Locale
@@ -171,6 +173,7 @@ data/zh_big5.txt	# preparating Unicode::Collate::Locale
 data/zh_gb.txt		# preparating Unicode::Collate::Locale
 data/zh_pin.txt		# preparating Unicode::Collate::Locale
 data/zh_strk.txt	# preparating Unicode::Collate::Locale
+data/zh_zhu.txt		# preparating Unicode::Collate::Locale
 disableXS	# perl script to disable XSUB
 enableXS	# perl script to enable XSUB
 gendata/cjk_test	# whole tests for CJK/*.pm
@@ -199,6 +202,7 @@ t/cjk_ja.t	test Unicode::Collate::CJK::JISX0208
 t/cjk_ko.t	test Unicode::Collate::CJK::Korean using DUCET
 t/cjk_py.t	test Unicode::Collate::CJK::Pinyin
 t/cjk_st.t	test Unicode::Collate::CJK::Stroke
+t/cjk_zy.t	test Unicode::Collate::CJK::Zhuyin
 t/cjkrange.t
 t/compatui.t
 t/contract.t
@@ -301,6 +305,7 @@ t/loc_zhb5.t	test Unicode::Collate::Locale
 t/loc_zhgb.t	test Unicode::Collate::Locale
 t/loc_zhpy.t	test Unicode::Collate::Locale
 t/loc_zhst.t	test Unicode::Collate::Locale
+t/loc_zhzy.t	test Unicode::Collate::Locale
 t/nonchar.t
 t/normal.t	test using Unicode::Normalize
 t/overcjk0.t

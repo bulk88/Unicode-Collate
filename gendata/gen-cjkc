@@ -16,7 +16,7 @@ use File::Spec;
 require 'gen-head'; # for testcount(), testhead() and testnew()
 require 'dumpstr';  # for string()
 
-my @obj = qw($objDefault $objB $objG $objJ $objK $objP $objS);
+my @obj = qw($objDefault $objB $objG $objJ $objK $objP $objS $objZ);
 my $ok = 1 + @obj;
 my $listobj = join ', ', @obj;
 my $test = <<"TEST";
@@ -55,5 +55,6 @@ print $th testnew('J', 'JA');
 print $th testnew('K', 'KO');
 print $th testnew('P', 'ZH__pinyin');
 print $th testnew('S', 'ZH__stroke');
+print $th testnew('Z', 'ZH__zhuyin');
 print $th $test;
 close $th;
