@@ -24,6 +24,7 @@ Collate/Locale/cs.pl		Unicode::Collate::Locale
 Collate/Locale/cy.pl		Unicode::Collate::Locale
 Collate/Locale/da.pl		Unicode::Collate::Locale
 Collate/Locale/de_phone.pl	Unicode::Collate::Locale
+Collate/Locale/ee.pl		Unicode::Collate::Locale
 Collate/Locale/eo.pl		Unicode::Collate::Locale
 Collate/Locale/es.pl		Unicode::Collate::Locale
 Collate/Locale/es_trad.pl	Unicode::Collate::Locale
@@ -105,6 +106,7 @@ data/cs.txt		# preparating Unicode::Collate::Locale
 data/cy.txt		# preparating Unicode::Collate::Locale
 data/da.txt		# preparating Unicode::Collate::Locale
 data/de_phone.txt	# preparating Unicode::Collate::Locale
+data/ee.txt		# preparating Unicode::Collate::Locale
 data/eo.txt		# preparating Unicode::Collate::Locale
 data/es.txt		# preparating Unicode::Collate::Locale
 data/es_trad.txt	# preparating Unicode::Collate::Locale
@@ -223,6 +225,7 @@ t/loc_be.t	test Unicode::Collate::Locale
 t/loc_bg.t	test Unicode::Collate::Locale
 t/loc_bn.t	test Unicode::Collate::Locale
 t/loc_bs.t	test Unicode::Collate::Locale
+t/loc_bscy.t	test Unicode::Collate::Locale
 t/loc_ca.t	test Unicode::Collate::Locale
 t/loc_cjk.t	test Unicode::Collate::Locale
 t/loc_cjkc.t	test Unicode::Collate::Locale
@@ -232,6 +235,7 @@ t/loc_cyrl.t	test Unicode::Collate::Locale
 t/loc_da.t	test Unicode::Collate::Locale
 t/loc_de.t	test Unicode::Collate::Locale
 t/loc_deph.t	test Unicode::Collate::Locale
+t/loc_ee.t	test Unicode::Collate::Locale
 t/loc_eo.t	test Unicode::Collate::Locale
 t/loc_es.t	test Unicode::Collate::Locale
 t/loc_estr.t	test Unicode::Collate::Locale

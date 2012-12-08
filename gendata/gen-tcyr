@@ -15,6 +15,7 @@
 #
 #   loc_be.t
 #   loc_bg.t (remaining \x{...} should be fixed)
+#   loc_bscy.t
 #   loc_cyrl.t
 #   loc_kk.t (remaining \x{...} should be fixed)
 #   loc_mk.t
@@ -28,7 +29,8 @@ use warnings;
 use File::Spec;
 require 'gen-head'; # for testcount() and testhead()
 
-my @Cyrill = qw(be bg cyrl kk mk ru sr uk);
+my @Cyrill = qw(bscy be bg cyrl kk mk ru sr uk);
+my %Alias  = qw(bscy sr);
 my $NoSupp = 'NoSuppress'; # for loc_cyrl.t
 
 # convert 'AAA BBB' to '\x{AAA}\x{BBB}'
@@ -49,8 +51,9 @@ while (<DATA>) {
 for my $loc (@Cyrill) {
     my @source;
     if ($loc ne 'cyrl') {
+	my $txt = $Alias{$loc} || $loc;
 	my $d = File::Spec->updir();
-	my $f = File::Spec->catfile($d, 'data', "$loc.txt");
+	my $f = File::Spec->catfile($d, 'data', "$txt.txt");
 	open my $src, "<$f" or die $f;
 	@source = <$src>;
 	close $src or die "close $f";
@@ -175,9 +178,15 @@ for my $loc (@Cyrill) {
 	open my $dst, ">$f" or die $f;
 	binmode $dst;
 	my $text = testhead($loc, $ok).$test;
+
 	$text =~ s/'CYRL'/'$NoSupp'/;
 	$text =~ s/'cyrl'/'default'/;
 	$text =~ s/objCyrl/obj$NoSupp/g;
+
+	$text =~ s/'BSCY'/'BS-CYRL'/;
+	$text =~ s/'bscy'/'bs_Cyrl'/;
+	$text =~ s/objBscy/objBsCyrl/g;
+
 	print $dst $text;
 	close $dst or die "close $f";
     }

@@ -59,6 +59,9 @@
 # {dZ}030C;<{d}017D> ===> U+0064,U+005A,U+030C eq U+0064,U+017D
 #     < > after ; can enclose a unit comprising plural XXXX or {literal}.
 #
+# alternate
+#    "alternate XXX" gives "variable => 'XXX'," and "alternate => 'XXX',".
+#
 # backwards
 #    It gives "backwards => 2,".
 #
@@ -280,6 +283,19 @@ my @OtherEquiv = split /\n=/, <<'OTHEREQUIV';
 00DA;U<0301>
 00FD;y<0301>
 00DD;Y<0301>
+=0302= (circum)
+00E2;a<0302>
+00C2;A<0302>
+00EA;e<0302>
+00CA;E<0302>
+00EE;i<0302>
+00CE;I<0302>
+00F4;o<0302>
+00D4;O<0302>
+00FB;u<0302>
+00DB;U<0302>
+0177;y<0302>
+0176;Y<0302>
 =0303= (tilde)
 00E3;a<0303>
 00C3;A<0303>
@@ -519,6 +535,12 @@ for my $txt (@txts) {
 	    require $f;
 	    next;
 	}
+	if (/^(alternate)\s+(\S+)/) {
+	    my $v = "variable";
+	    $ptxt .= "   $v => '$2',\n";
+	    $ptxt .= "   $1 => '$2',\n";
+	    next;
+	}
 	if (/^backwards$/) {
 	    $ptxt .= "   backwards => 2,\n";
 	    next;
@@ -689,7 +711,8 @@ sub getname {
 }
 
 sub parse_rule {
-    (my $e   = shift) =~ s/ .*\z//;
+    my $e    = shift;
+    my $e1   = $e =~ /^([0-9A-F]+)/ ? $1 : '';
     my $rule = shift;
     my $lockeys = shift;
     my $result = '';
@@ -717,12 +740,11 @@ sub parse_rule {
 	    $regexp =~ s/\.00(?:0[1-9A-F]|1[0-9A-F])\\\.[0-9A-F]+
 			/.(00(?:0[1-9A-F]|1[0-9A-F]))\\.[0-9A-F]+/gx;
 			# tertiary weights of 01-1F (excluding 00)
-	    my @tertD = map hex($_), $decomp =~ /^$regexp\z/;
-	    my @tertC = map hex($_), $compat =~ /^$regexp\z/;
-	    croak "wrong at $rule" unless @c == @tertD && @c == @tertC;
-	    my @diff  = map { $tertC[$_] - $tertD[$_] } 0..@c-1;
-	    my $replace = join ' ', map "<$c[$_]>+++$diff[$_]", 0..@c-1;
-	    $rule = $replace.$rule;
+	    my @tD = map hex($_), $decomp =~ /^$regexp\z/;
+	    my @tC = map hex($_), $compat =~ /^$regexp\z/;
+	    croak "wrong at $rule" unless @c == @tD && @c == @tC;
+	    my $r = join ' ', map "<$c[$_]>+++".($tC[$_] - $tD[$_]), 0..@c-1;
+	    $rule = $r.$rule;
 	    next;
 	}
 
@@ -766,7 +788,7 @@ sub parse_rule {
 
 	$simple_decomp = 0 if $replaced;
 	for my $c (@base) {
-	    $c->[4] = hex $e if $replaced;
+	    $c->[4] = hex $e1 if $replaced;
 	    $result .= ce(@$c);
 	}
 	croak "something wrong at $rule" if $prerule eq $rule;
