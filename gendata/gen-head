@@ -12,8 +12,8 @@ sub testcount ($$;$) {
     my $mult = shift; # multiplier (tests in a loop)
 
     my $numeric = $test =~ /^\d+\z/;
-    $$r_ok += $numeric ? $test : ($mult ? $mult : 1) *
-				 ($test =~ s/ok\(/ok\(/g);
+    my $num_ok  = $test =~ s/ok\(/ok\(/g;
+    $$r_ok += $numeric ? $test : ($mult ? $mult : 1) * $num_ok;
 	# if $test is real, ok() in the script will be counted.
 	# if $numeric, only increase in $r_ok.
 

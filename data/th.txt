@@ -1,7 +1,9 @@
-locale_version 0.95
+locale_version 0.96
 alternate shifted
-0E2F;<0E5A>-1 [*FFF1.0.0.0]
+0E2F;<0E5A>+0 [*FFF0.0.0.0]
+0E5A;<0E5A>+0 [*FFF1.0.0.0]
 0E46;<0E5B>+0 [*FFF1.0.0.0]
+0E5B;<0E5B>+0 [*FFF0.0.0.0]
 0E4C;<0E4E>++1
 0E47;<0E4E>++2
 0E48;<0E4E>++3

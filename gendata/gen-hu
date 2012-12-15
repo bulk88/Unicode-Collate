@@ -3,7 +3,7 @@
 #
 # output files
 #
-#   hu.txt   (a main part of data/hu.txt)
+#   hu.txt   (equal to data/hu.txt)
 #   loc_hu.t (a main part of t/loc_hu.t)
 #
 use strict;
@@ -14,7 +14,9 @@ my @a = qw( cs dz dzs gy ly ny sz ty zs );
 
 my $textf = 'hu.txt';
 my $text1 = '';
-my $text2 = "#here ccs is identical to cscs etc.\n";
+my $text2 = "00F6;o+1\n00D6;O+1\n0151;o+1++1\n0150;O+1++1\n"
+	  . "00FC;u+1\n00DC;U+1\n0171;u+1++1\n0170;U+1++1\n"
+	  . "#here ccs is identical to cscs etc.\n";
 my $testf = 'loc_hu.t';
 my $test1 = '';
 my $test2 = '';

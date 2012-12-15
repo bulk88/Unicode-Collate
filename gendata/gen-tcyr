@@ -62,8 +62,10 @@ for my $loc (@Cyrill) {
     my $has_suppress = 0;
     my(@tailored, %tailoring, %suppressed);
     for (@source) {
+	chomp;
 	next if /^\s*$/;
 	next if /^#/;
+	next if /^locale_version/;
 	$has_suppress = 1 if /suppress/;
 	if (/^([0-9A-Fa-f]+);<([0-9A-Fa-f]+)>([+-])1$/) {
 	    $tailoring{$1} = "$3$2";
@@ -71,7 +73,7 @@ for my $loc (@Cyrill) {
 	} elsif ($has_suppress) {
 	    $suppressed{$_} = 1 for split;
 	} else {
-	    die "$_";
+	    die "$_ in $loc";
 	}
     }
 

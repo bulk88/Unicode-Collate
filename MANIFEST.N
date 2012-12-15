@@ -184,6 +184,7 @@ gendata/gen-cjkc	# preparating Unicode::Collate::Locale
 gendata/gen-head	# preparating Unicode::Collate::Locale
 gendata/gen-hu		# preparating Unicode::Collate::Locale
 gendata/gen-ja		# preparating Unicode::Collate::Locale
+gendata/gen-ta		# preparating Unicode::Collate::Locale
 gendata/gen-tcyr	# preparating Unicode::Collate::Locale
 gendata/gen-vi		# preparating Unicode::Collate::Locale
 gendata/gen-zh		# preparating Unicode::Collate::Locale
