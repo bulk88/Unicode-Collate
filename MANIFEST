@@ -313,6 +313,7 @@ t/loc_zhst.t	test Unicode::Collate::Locale
 t/loc_zhzy.t	test Unicode::Collate::Locale
 t/nonchar.t
 t/normal.t	test using Unicode::Normalize
+t/notable.t
 t/overcjk0.t
 t/overcjk1.t
 t/override.t
