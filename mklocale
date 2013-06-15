@@ -24,7 +24,7 @@
 # 00F1;n+1 ===> primary weight of 00F1 is greater than that of n by 1.
 #    Among literals, only [A-Za-z] can be the base.
 #    +1 for primary weight (greater by 1),
-#    -1 for primary weight (lesser by 1),
+#    -1 for primary weight (less by 1),
 #    ++1 and --1 for secondary weight,
 #    +++1 and ---1 for tertiary weight.
 #    A number followed by + or - is decimal integer.
