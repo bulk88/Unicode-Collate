@@ -28,7 +28,7 @@ my $f = File::Spec->catfile($d, 'Collate', 'allkeys.txt');
 open my $fh, "<$f" or die $f;
 
 while (<$fh>) {
-    next if !/\[\.F[0-9A-F]+\.[0-9A-F]+\.0002\./;
+    next if !/\[\.F[0-9A-F]+\.[0-9A-F]+\.0002[\.\]]/;
     my @p = map hex($_), /\[\.([0-9A-F]+)\./g;
     next if @p != 2;
     my $u = ((($p[0] & 0x3F) << 15) | ($p[1] & 0x7FFF));

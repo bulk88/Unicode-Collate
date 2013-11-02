@@ -1,4 +1,3 @@
-locale_version 0.95
 # d-tail, open-e, f-hook, gamma, eng, open-o, v-hook don't require tailoring
 0302;<030C>++1
 {dz};d+1

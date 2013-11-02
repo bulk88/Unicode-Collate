@@ -1,4 +1,3 @@
-locale_version 0.95
 {ng};n+1
 {Ng};N+1---1
 {NG};N+1

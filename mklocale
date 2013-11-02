@@ -92,7 +92,8 @@ use warnings;
 use Carp;
 use File::Spec;
 
-my $DEFAULT_LOCALE_VERSION = '0.93'; # update DUCET (Unicode 6.2.0)
+my $Use4th; # Use 4th level (Unicode 6.2.0 or before)
+my $DEFAULT_LOCALE_VERSION = '1.01'; # update DUCET (Unicode 6.3.0)
 
 BEGIN {
     unless ("A" eq pack('U', 0x41)) {
@@ -153,7 +154,8 @@ sub simple_cjk_deriv { # $u should be CJK U.I. or Ext.
     my $base = (CJK_UidFr <= $u && $u <= CJK_UidTo) ? 0xFB40 : 0xFB80;
     my $aaaa = $base + ($u >> 15);
     my $bbbb = ($u & 0x7FFF) | 0x8000;
-    return ce(0, $aaaa, Min2Wt, Min3Wt, $u).ce(0, $bbbb, 0, 0, $u);
+    my @u = $Use4th ? ($u) : ();
+    return ce(0, $aaaa, Min2Wt, Min3Wt, @u).ce(0, $bbbb, 0, 0, @u);
 }
 
 my %Keys;        # "0300" => "[.0000.0035.0002.0300]"
@@ -397,7 +399,8 @@ for my $o (@OtherEquiv) {
 	$name =~ s/; QQ[A-Z]+//;
 	$name =~ s/^ ?\[[0-9A-F]+\] ?//;
 
-	if ($k eq '[.0000.0000.0000.0000]') {
+	if ($k =~ /\[\.0000\.0000\.0000(\.?0*)\]/) {
+	    $Use4th = 1 if $1;
 	    $Name{$e} = $name;
 	    next;
 	}
@@ -420,7 +423,7 @@ for my $o (@OtherEquiv) {
 	}
 
 	# CJK compatibility ideographs
-	if ($k =~ /^\[\.F[0-9A-F]+\.[0-9A-F]+\.0002\./) {
+	if ($k =~ /^\[\.F[0-9A-F]+\.[0-9A-F]+\.0002[\.\]]/) {
 	    my @p = map hex($_), $k =~ /\[\.([0-9A-F]+)\./g;
 	    if (@p == 2) {
 		my $ui = ((($p[0] & 0x3F) << 15) | ($p[1] & 0x7FFF));
@@ -662,6 +665,7 @@ sub parse_entry {
 	}
 	if ($Equiv{$key}) {
 	    for my $eq (@{ $Equiv{$key} }) {
+		next if $key =~ /^\[\.0000\.[^]]+\]\z/; # primary ignorable
 		next if $lockeys->{$eq};
 		next if $eq eq '3038'; # 3038 is identical to 2F17 in DUCET,
 				       # but not canonical equivalent.
@@ -728,24 +732,26 @@ sub parse_rule {
 	    my $k = $1;
 	    my $var = $k =~ /^\[\*/ ? 1 : 0;
 	    my @c = _getHexArray($k);
+	    @c = @c[0..2] if !$Use4th;
 	    $result .= ce($var, @c);
 	    next;
 	}
 
-	if ($rule =~ s/^<([0-9A-F ]+)>\+\+\+\?//) {
-	    my @c = split ' ', $1;
+	if ($rule =~ s/^(<([0-9A-F ]+)>\+\+\+\?)//) {
+	    my $cr = $1;
+	    my @c = split ' ', $2;
 	    my $compat = $Keys{$e};
 	    my $decomp = join '', map {
 			$Keys{$_} ? $Keys{$_} : simple_cjk_deriv($_)
 		    } @c;
 	    my $regexp = $decomp;
 	    $regexp =~ s/([\[\]\.\*])/\\$1/g;
-	    $regexp =~ s/\.00(?:0[1-9A-F]|1[0-9A-F])\\\.[0-9A-F]+
-			/.(00(?:0[1-9A-F]|1[0-9A-F]))\\.[0-9A-F]+/gx;
+	    $regexp =~ s/\.00(?:0[1-9A-F]|1[0-9A-F])(?:\\\.[0-9A-F]+|)\\\]
+			/.(00(?:0[1-9A-F]|1[0-9A-F]))(?:\\.[0-9A-F]+|)\\\]/gx;
 			# tertiary weights of 01-1F (excluding 00)
 	    my @tD = map hex($_), $decomp =~ /^$regexp\z/;
 	    my @tC = map hex($_), $compat =~ /^$regexp\z/;
-	    croak "wrong at $rule" unless @c == @tD && @c == @tC;
+	    croak "wrong at $cr" unless @c == @tD && @c == @tC;
 	    my $r = join ' ', map "<$c[$_]>+++".($tC[$_] - $tD[$_]), 0..@c-1;
 	    $rule = $r.$rule;
 	    next;
@@ -759,6 +765,7 @@ sub parse_rule {
 	    $key = $lockeys->{$c} || $Keys{$c};
 	    if (!defined $key) {
 		my $u = hex $c;
+		my @u = $Use4th ? ($u) : ();
 		my @r;
 		if (SBase <= $u && $u <= SFinal) {
 		    @r = $lockeys->{$OvHang}->($u) if $lockeys->{$OvHang};
@@ -768,7 +775,7 @@ sub parse_rule {
 		}
 		if (@r) {
 		    $key = join '', map {
-			ref $_ ? ce(0, @$_) : ce(0, $_, Min2Wt, Min3Wt, $u)
+			ref $_ ? ce(0, @$_) : ce(0, $_, Min2Wt, Min3Wt, @u)
 			    } @r;
 		}
 	    }
@@ -791,7 +798,7 @@ sub parse_rule {
 
 	$simple_decomp = 0 if $replaced;
 	for my $c (@base) {
-	    $c->[4] = hex $e1 if $replaced;
+	    $c->[4] = hex $e1 if $replaced && $Use4th;
 	    $result .= ce(@$c);
 	}
 	croak "something wrong at $rule" if $prerule eq $rule;

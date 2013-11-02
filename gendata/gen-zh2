@@ -40,7 +40,7 @@ my %type = qw(B big5han  G gb2312han  P pinyin  S stroke  Z zhuyin);
 my %txt  = qw(B big5     G gb         P pin     S strk    Z zhu   );
 my %cjk  = qw(B no       G no         P yes     S yes     Z yes   );
 my %t    = qw(B b5       G gb         P py      S st      Z zy    );
-my %ver  = qw(B 0        G 0          P 0       S 0       Z 0.94  );
+my %ver  = qw(B 0        G 0          P 0       S 0       Z 0     );
 
 my %test = (
     B => [qw(A000 5159 515B 515E 515D 5161 5163 55E7 74E9 7CCE 4E00 4E59

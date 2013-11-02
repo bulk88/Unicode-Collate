@@ -1,4 +1,3 @@
-locale_version 0.96
 0B82;<0B83>+0 [.FFF0.0.0.0]
 0B83;<0B83>+0 [.FFF1.0.0.0]
 0B95 0BCD 0BB7 0BCD;<0BB9>+0 [.FFF2.0.0.0]

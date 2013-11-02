@@ -1,5 +1,4 @@
 use Unicode::Collate::CJK::Zhuyin
-locale_version 0.94
 overrideCJK Unicode::Collate::CJK::Zhuyin::weightZhuyin
 02C9;[.0.0199.2.02C9]
 02CA;[.019A.20.2.02CA]

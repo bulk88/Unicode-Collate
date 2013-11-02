@@ -16,6 +16,7 @@ use Unicode::Normalize;
 require 'dumpstr'; # for string() and unidump()
 
 my $textf = 'ja.txt';
+my $text0 = "#katakana\n";
 my $text1 = "#hiragana\n";
 my $text2 = "#fullwidth and halfwidth\n";
 
@@ -27,6 +28,18 @@ my $test3 = '';
 my %kata2hira;
 my %kata2kana;
 
+for my $u (0x30A1..0x30FA, 0x30FD..0x30FE) {
+    my $nfd = NFD(pack 'U', $u);
+    my @d = unpack 'U*', $nfd;
+
+    if (@d == 1) {
+	$text0 .= sprintf "%04X;<%04X>++++2\n", $u, $u;
+    } else {
+	my $dec = join '', map sprintf("<%04X>", $_), @d;
+	$text0 .= sprintf "%04X;%s\n", $u, $dec;
+    }
+}
+
 for my $u (0x3041..0x3096, 0x309D..0x309E) {
     my $nfd = NFD(pack 'U', $u);
     my @d = unpack 'U*', $nfd;
@@ -35,7 +48,7 @@ for my $u (0x3041..0x3096, 0x309D..0x309E) {
     $kata2hira{$k} = $u;
 
     if (@d == 1) {
-	$text1 .= sprintf "%04X;<%04X>+++0\n", $u, $k;
+	$text1 .= sprintf "%04X;<%04X>----1\n", $u, $k;
     } else {
 	my $dec = join '', map sprintf("<%04X>", $_), @d;
 	$text1 .= sprintf "%04X;%s\n", $u, $dec;
@@ -335,6 +348,6 @@ open my $dh, ">$textf" or die $textf;
 binmode $dh;
 print $dh "use Unicode::Collate::CJK::JISX0208\n";
 print $dh "overrideCJK Unicode::Collate::CJK::JISX0208::weightJISX0208\n";
-print $dh "$text1$text2";
+print $dh "$text0$text1$text2";
 print $dh "$textP$textI";
 close $dh or die $textf;
