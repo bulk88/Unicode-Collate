@@ -24,6 +24,7 @@ my $testf = 'loc_ja.t';
 my $test1 = '';
 my $test2 = '';
 my $test3 = '';
+my $test4 = '';
 
 my %kata2hira;
 my %kata2kana;
@@ -38,6 +39,11 @@ for my $u (0x30A1..0x30FA, 0x30FD..0x30FE) {
 	my $dec = join '', map sprintf("<%04X>", $_), @d;
 	$text0 .= sprintf "%04X;%s\n", $u, $dec;
     }
+
+    next if @d == 1;
+    my $ustr = string(pack 'U', $u);
+    my $dstr = string($nfd);
+    $test3 .= qq|ok(\$objJa->eq($ustr, $dstr));\n|;
 }
 
 for my $u (0x3041..0x3096, 0x309D..0x309E) {
@@ -60,7 +66,7 @@ for my $u (0x3041..0x3096, 0x309D..0x309E) {
 
     next if @d == 1;
     my $dstr = string($nfd);
-    $test3 .= qq|ok(\$objJa->eq($ustr, $dstr));\n|;
+    $test4 .= qq|ok(\$objJa->eq($ustr, $dstr));\n|;
 }
 
 for my $u (0x3000, 0xFF00..0xFF9F, 0xFFE0..0xFFFD) {
@@ -115,6 +121,7 @@ $test1 =~ s/->eq/->lt/g;
 $test .= "\$objJa->change(level => 4);\n\n";
 $test .= testcount(\$ok, $test1);
 $test .= testcount(\$ok, $test3);
+$test .= testcount(\$ok, $test4);
 
 $test .= "\$objJa->change(katakana_before_hiragana => 1);\n\n";
 $test .= testcount(\$ok, $test1);

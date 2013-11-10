@@ -3,8 +3,8 @@
 #
 # output files
 #
-#   ta.txt   (a main part of data/ta.txt)
-#   loc_ta.t (a main part of t/loc_ta.t)
+#   ta.txt   (equal to data/ta.txt)
+#   loc_ta.t (equal to t/loc_ta.t)
 #
 use strict;
 use warnings;
@@ -15,7 +15,7 @@ my @consonant = qw(B95 B99 B9A B9E B9F BA3 BA4 BA8 BAA BAE BAF BB0
 my @aftercons = qw(Kssa BBE);
 
 my $textf = 'ta.txt';
-my $text1 = '';
+my $text1 = "0B82;<0B83>+0 [.FFF0.0.0.0]\n0B83;<0B83>+0 [.FFF1.0.0.0]\n";
 my $text2 = '';
 my $testf = 'loc_ta.t';
 my $test1 = << 'TEST';
@@ -23,6 +23,8 @@ my $test1 = << 'TEST';
     my $t = $h ? pack('U', 0xFFFF) : "";
     $objTa->change(highestFFFF => 1) if $h;
 
+    ok($objTa->lt("\x{B94}$t",   "\x{B82}"));
+    ok($objTa->lt("\x{B82}$t",   "\x{B83}"));
 TEST
 
 my $type = 'c';
@@ -64,6 +66,8 @@ my $test = '';
 my $ok = 2;
 
 $test .= "\$objTa->change(level => 1);\n\n";
+$test .= 'my $Kssa = "\x{B95}\x{BCD}\x{BB7}";'."\n";
+$test .= 'my $v    = "\x{BCD}";'."\n\n";
 $test .= qq|for my \$h (0, 1) |;
 $test .= testcount(\$ok, $test1, 2);
 

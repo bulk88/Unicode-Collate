@@ -1,5 +1,12 @@
 Revision history for Perl module Unicode::Collate.
 
+1.02  Sun Nov 10 18:39:37 2013
+    - POD: fix [rt.cpan.org #90170] about iso-8859-1 letters in pod.
+      E<> is used for the compatibility with perl 5.6.1 and possibly EBCDIC.
+    - 1.01 forgot to increase the version number of CJK/Korean.pm.
+    - modified tests: cjkrange.t, compatui.t, hangtype.t, illegal.t,
+      loc_ja.t, loc_ta.t, overcjk0.t, overcjk1.t, view.t in t.
+
 1.01  Sat Nov  2 19:00:38 2013
     - DUCET is updated (for Unicode 6.3.0) as Collate/allkeys.txt.
     ! Please notice that allkeys.txt will be overwritten if you have had
