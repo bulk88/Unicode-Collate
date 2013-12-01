@@ -17,7 +17,7 @@ use File::Spec;
 
 no warnings 'utf8';
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 our $PACKAGE = __PACKAGE__;
 
 my @Path = qw(Unicode Collate);
@@ -137,11 +137,9 @@ sub pack_U {
     return pack('U*', @_);
 }
 
-### begin PP only ###
 sub unpack_U {
     return unpack('U*', shift(@_).pack('U*'));
 }
-### end PP only ###
 
 ######
 
@@ -1018,7 +1016,7 @@ sub _isIllegal {
     my $code = shift;
     return((! defined $code)                    # removed
 	|| ($code < 0 || 0x10FFFF < $code)      # out of range
-	|| (($code & 0xFFFE) == 0xFFFE)         # ??FFF[EF] (cf. utf8.c)
+	|| (($code & 0xFFFE) == 0xFFFE)         # ??FFF[EF]
 	|| (0xD800 <= $code && $code <= 0xDFFF) # unpaired surrogates
 	|| (0xFDD0 <= $code && $code <= 0xFDEF) # other non-characters
     );

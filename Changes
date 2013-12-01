@@ -1,5 +1,9 @@
 Revision history for Perl module Unicode::Collate.
 
+1.03  Sun Dec  1 21:45:46 2013
+    - XS: now unpack_U() uses unpack('U*') in pure perl.
+      avoid XS for the internal "utf8" encoding of perl.
+
 1.02  Sun Nov 10 18:39:37 2013
     - POD: fix [rt.cpan.org #90170] about iso-8859-1 letters in pod.
       E<> is used for the compatibility with perl 5.6.1 and possibly EBCDIC.
