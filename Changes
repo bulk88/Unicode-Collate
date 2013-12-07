@@ -1,5 +1,10 @@
 Revision history for Perl module Unicode::Collate.
 
+1.04  Sat Dec  7 11:34:18 2013
+    - XS: a workaround for perl 5.6.x to handle U+FFFF correctly.
+      unpack_U() is implemented by using XS again as well as that in 1.02,
+      but now that is used only in the versions before perl 5.8.0.
+
 1.03  Sun Dec  1 21:45:46 2013
     - XS: now unpack_U() uses unpack('U*') in pure perl.
       avoid XS for the internal "utf8" encoding of perl.
