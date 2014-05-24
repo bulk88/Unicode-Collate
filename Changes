@@ -1,5 +1,9 @@
 Revision history for Perl module Unicode::Collate.
 
+1.05  Sat May 24 16:30:42 2014
+    - XS: avoid unused expression 1; for no-op.
+      (see [rt.cpan.org #95866] compilation noise)
+
 1.04  Sat Dec  7 11:34:18 2013
     - XS: a workaround for perl 5.6.x to handle U+FFFF correctly.
       unpack_U() is implemented by using XS again as well as that in 1.02,

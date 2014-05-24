@@ -17,7 +17,7 @@ use File::Spec;
 
 no warnings 'utf8';
 
-our $VERSION = '1.04';
+our $VERSION = '1.05';
 our $PACKAGE = __PACKAGE__;
 
 ### begin XS only ###
@@ -2029,7 +2029,7 @@ B<Unicode::Normalize is required to try The Conformance Test.>
 =head1 AUTHOR, COPYRIGHT AND LICENSE
 
 The Unicode::Collate module for perl was written by SADAHIRO Tomoyuki,
-<SADAHIRO@cpan.org>. This module is Copyright(C) 2001-2013,
+<SADAHIRO@cpan.org>. This module is Copyright(C) 2001-2014,
 SADAHIRO Tomoyuki. Japan. All rights reserved.
 
 This module is free software; you can redistribute it and/or

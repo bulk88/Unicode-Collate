@@ -46,6 +46,9 @@
 # 01FD;<00E6><0301> ===> U+01FD eq U+00E6,U+0301
 #    simple decomposition (without + and -): identical each other.
 #
+# 0902;<0950>+0 [.FFF1.0.0.0]
+#     [...] means constant weights in hexadecimal.
+#
 # 0064 0335;=
 # 0111;d++1<0335>
 #    '=' saves DUCET weights as it is.
