@@ -1,5 +1,9 @@
 Revision history for Perl module Unicode::Collate.
 
+1.06  Tue May 27 21:11:09 2014
+    - 0.67's improved discontiguous contractions is invalidated by default
+      and is supported as a parameter 'long_contraction.'
+
 1.05  Sat May 24 16:30:42 2014
     - XS: avoid unused expression 1; for no-op.
       (see [rt.cpan.org #95866] compilation noise)
