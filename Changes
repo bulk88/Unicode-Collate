@@ -1,5 +1,8 @@
 Revision history for Perl module Unicode::Collate.
 
+1.07  Tue May 27 23:18:23 2014
+    - XS: for the world without utf8n_to_uvuni().
+
 1.06  Tue May 27 21:11:09 2014
     - 0.67's improved discontiguous contractions is invalidated by default
       and is supported as a parameter 'long_contraction.'

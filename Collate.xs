@@ -11,9 +11,9 @@
 #include "ucatbl.h"
 
 /* Perl 5.6.1 ? */
-#ifndef utf8n_to_uvuni
+#ifdef utf8_to_uv
 #define utf8n_to_uvuni  utf8_to_uv
-#endif /* utf8n_to_uvuni */
+#endif /* utf8_to_uv */
 
 /* UTF8_ALLOW_BOM is used before Perl 5.8.0 */
 #ifndef UTF8_ALLOW_BOM
